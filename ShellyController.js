@@ -56661,8 +56661,8 @@ rtl.module("MQTTBridge",["System","SysUtils","JS","Web"],function () {
           self.FClient.on('message', function(topic, message) {
             try {
               var payload = message ? message.toString() : '';
-              var cb = self.FOnMessage;
-              if (cb) cb(topic, payload);
+              
+              if (self.FOnMessage) self.FOnMessage(topic, payload);
             } catch(e) {
               console.error('MQTT message handler error:', e);
             }
@@ -56682,7 +56682,7 @@ rtl.module("MQTTBridge",["System","SysUtils","JS","Web"],function () {
     this.Subscribe = function (ATopic) {
       if (this.FState !== $mod.TMQTTState.msConnected) throw pas.SysUtils.Exception.$create("Create$1",["Nicht verbunden"]);
       try {
-        this.FClient.subscribe(ATopic, { qos: 1 });
+        this.FClient.subscribe(ATopic, { qos: 0 });
       } catch(e) {
         console.error('Subscribe error:', ATopic, e);
       };
