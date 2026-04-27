@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shelly Controller</title>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #0d0f14;
+      --surface:   #161921;
+      --card:      #1e2230;
+      --border:    #2a2f42;
+      --accent:    #00e5a0;
+      --accent2:   #0099ff;
+      --danger:    #ff4757;
+      --warn:      #ffa502;
+      --text:      #e8ecf0;
+      --muted:     #6b7494;
+      --font-ui:   'Rajdhani', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #app-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 0 40px 0;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 0 24px;
+      margin-bottom: 0;
+    }
+    .header-logo { display: flex; align-items: center; gap: 12px; }
+    .header-logo svg { width: 30px; height: 30px; }
+    .header-title { font-size: 22px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+    .header-title span { color: var(--accent); }
+
+    /* ── Tab Bar ── */
+    .tab-bar {
+      display: flex;
+      margin: 20px 24px 0 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+    }
+    .tab-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+
+    /* Connection dot in tab */
+    .tab-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.3s;
+      flex-shrink: 0;
+    }
+    .tab-dot.connected  { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+    .tab-dot.connecting { background: var(--warn); animation: pulse 1s infinite; }
+    .tab-dot.error      { background: var(--danger); }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── Tab Pages ── */
+    .tab-page { display: none; padding: 24px; }
+    .tab-page.active { display: block; }
+
+    /* ── Section Label ── */
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* ── Panel ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+
+    /* ── Connection Form ── */
+    .conn-fields {
+      display: grid;
+      grid-template-columns: 1fr 90px;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .conn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+    .field-label {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+    .field-input {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+      min-height: 44px;
+    }
+    .field-input:focus { border-color: var(--accent); }
+
+    /* ── Buttons ── */
+    .btn-row { display: flex; gap: 10px; }
+    .btn {
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 12px 24px;
+      text-transform: uppercase;
+      transition: all 0.15s;
+      white-space: nowrap;
+      min-height: 44px;
+    }
+    .btn-connect    { background: var(--accent); color: #000; flex: 1; }
+    .btn-connect:hover { background: #00ffc0; }
+    .btn-disconnect { background: transparent; border: 1px solid var(--danger); color: var(--danger); flex: 1; }
+    .btn-disconnect:hover { background: rgba(255,71,87,0.1); }
+
+    /* ── Status Box ── */
+    .status-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 4px;
+    }
+    .conn-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    .conn-dot.connected    { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    .conn-dot.connecting   { background: var(--warn); animation: pulse 1s infinite; }
+    .conn-dot.disconnected { background: var(--danger); }
+
+    #connLabel {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── Add Device ── */
+    .add-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    /* ── Device Grid ── */
+    .devices-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .device-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .device-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: var(--border);
+      transition: background 0.3s;
+    }
+    .device-card.online::before  { background: var(--accent); }
+    .device-card.offline::before { background: var(--danger); }
+    .device-card:hover { transform: translateY(-2px); border-color: var(--accent2); }
+
+    .device-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    .device-name { font-size: 16px; font-weight: 700; }
+    .device-id   { font-family: var(--font-mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    .device-status-pill { font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; }
+    .pill-online  { background: rgba(0,229,160,0.15); color: var(--accent); }
+    .pill-offline { background: rgba(255,71,87,0.15);  color: var(--danger); }
+
+    /* Toggle */
+    .switch-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .switch-label { font-size: 13px; color: var(--muted); }
+    .toggle { position: relative; width: 56px; height: 30px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background: var(--border); border-radius: 30px; cursor: pointer; transition: background 0.3s; }
+    .slider::before {
+      content: '';
+      position: absolute;
+      width: 22px; height: 22px;
+      left: 4px; bottom: 4px;
+      background: var(--muted);
+      border-radius: 50%;
+      transition: transform 0.3s, background 0.3s;
+    }
+    .toggle input:checked + .slider { background: rgba(0,229,160,0.3); }
+    .toggle input:checked + .slider::before { transform: translateX(26px); background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+
+    /* Sensors */
+    .sensor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .sensor-item { background: var(--surface); border-radius: 6px; padding: 8px 10px; }
+    .sensor-val  { font-family: var(--font-mono); font-size: 17px; font-weight: 700; color: var(--accent2); }
+    .sensor-key  { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+    .btn-delete {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 6px 10px;
+      margin-top: 14px;
+      transition: all 0.15s;
+      width: 100%;
+      font-family: var(--font-ui);
+      min-height: 36px;
+    }
+    .btn-delete:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* Empty state */
+    .empty-state {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 48px;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    /* ── Log ── */
+    .log-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .log-body {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      height: 180px;
+      overflow-y: auto;
+      padding: 12px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .log-entry { display: flex; gap: 12px; }
+    .log-time  { color: var(--muted); white-space: nowrap; }
+    .log-msg.info  { color: var(--text); }
+    .log-msg.ok    { color: var(--accent); }
+    .log-msg.error { color: var(--danger); }
+    .log-msg.warn  { color: var(--warn); }
+    .btn-clear {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 11px;
+      padding: 4px 12px;
+      font-family: var(--font-ui);
+      letter-spacing: 1px;
+    }
+    .btn-clear:hover { color: var(--text); border-color: var(--text); }
+
+    /* ── Mobile ── */
+    @media (max-width: 600px) {
+      .header { padding: 16px 16px 0 16px; }
+      .tab-bar { margin: 14px 16px 0 16px; }
+      .tab-page { padding: 16px; }
+      .conn-fields { grid-template-columns: 1fr; }
+      .conn-row    { grid-template-columns: 1fr; }
+      .add-row     { grid-template-columns: 1fr; }
+      .btn-row     { flex-direction: column; }
+      .panel       { padding: 16px; }
+      .header-title { font-size: 18px; }
+      .tab-btn { font-size: 12px; padding: 10px 8px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app-wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-logo">
+      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="18" cy="18" r="17" stroke="#00e5a0" stroke-width="1.5"/>
+        <circle cx="18" cy="18" r="8"  fill="rgba(0,229,160,0.15)" stroke="#00e5a0" stroke-width="1.5"/>
+        <line x1="18" y1="1"  x2="18" y2="10" stroke="#00e5a0" stroke-width="1.5"/>
+        <line x1="18" y1="26" x2="18" y2="35" stroke="#00e5a0" stroke-width="1.5"/>
+        <line x1="1"  y1="18" x2="10" y2="18" stroke="#00e5a0" stroke-width="1.5"/>
+        <line x1="26" y1="18" x2="35" y2="18" stroke="#00e5a0" stroke-width="1.5"/>
+        <circle cx="18" cy="18" r="3" fill="#00e5a0"/>
+      </svg>
+      <div>
+        <div class="header-title">SHELLY <span>CONTROLLER</span></div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">GEN3 · MQTT · HIVEMQ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-conn-btn" onclick="switchTab('conn')">
+      <div class="tab-dot" id="tabDot"></div>
+      VERBINDUNG
+    </button>
+    <button class="tab-btn" id="tab-dev-btn" onclick="switchTab('dev')">
+      ⚡ GERÄTE
+    </button>
+  </div>
+
+  <!-- ── TAB 1: Verbindung ── -->
+  <div class="tab-page active" id="tab-conn">
+
+    <div class="section-title">BROKER EINSTELLUNGEN</div>
+    <div class="panel">
+      <div class="conn-fields">
+        <div class="field-group">
+          <div class="field-label">Host</div>
+          <input class="field-input" id="inpHost" type="text" placeholder="xxx.s1.eu.hivemq.cloud">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Port WSS</div>
+          <input class="field-input" id="inpPort" type="text" value="8884">
+        </div>
+      </div>
+      <div class="conn-row">
+        <div class="field-group">
+          <div class="field-label">Benutzer</div>
+          <input class="field-input" id="inpUser" type="text" placeholder="username">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Passwort</div>
+          <input class="field-input" id="inpPass" type="password" placeholder="••••••••">
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-connect"    id="btnConnect">VERBINDEN</button>
+        <button class="btn btn-disconnect" id="btnDisconnect" style="display:none">TRENNEN</button>
+      </div>
+
+      <!-- Status -->
+      <div class="status-box" style="margin-top:16px">
+        <div class="conn-dot" id="connDot"></div>
+        <span id="connLabel" style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">GETRENNT</span>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;font-size:13px;color:var(--muted);line-height:1.6">
+      <div style="color:var(--text);font-weight:600;margin-bottom:6px;letter-spacing:1px">HINWEIS</div>
+      Verbindungsdaten werden automatisch im Browser gespeichert.<br>
+      Nach dem Verbinden wechsle zum Tab <span style="color:var(--accent)">GERÄTE</span>, um Shelly-Geräte hinzuzufügen und zu steuern.
+    </div>
+  </div>
+
+  <!-- ── TAB 2: Geräte ── -->
+  <div class="tab-page" id="tab-dev">
+
+    <!-- Gerät hinzufügen -->
+    <div class="section-title">GERÄT HINZUFÜGEN</div>
+    <div class="panel">
+      <div class="add-row">
+        <div class="field-group">
+          <div class="field-label">Gerätename</div>
+          <input class="field-input" id="inpDevName" type="text" placeholder="z.B. Wohnzimmer Lampe">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Shelly Device-ID</div>
+          <input class="field-input" id="inpDevId" type="text" placeholder="shelly1pmminig3-xxxx">
+        </div>
+        <button class="btn btn-connect" id="btnAddDevice" style="padding:12px 20px">+ HINZUFÜGEN</button>
+      </div>
+    </div>
+
+    <!-- Geräte Grid -->
+    <div class="section-title">GERÄTE</div>
+    <div class="devices-grid" id="devicesGrid">
+      <div class="empty-state" id="emptyState">
+        Noch keine Geräte hinzugefügt.<br>
+        Zuerst auf Tab <span style="color:var(--accent)">VERBINDUNG</span> mit HiveMQ verbinden.
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="log-panel">
+      <div class="log-header">
+        <div class="section-title" style="margin:0">MQTT LOG</div>
+        <button class="btn-clear" id="btnClearLog">LEEREN</button>
+      </div>
+      <div class="log-body" id="logBody"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function switchTab(tab) {
+    document.getElementById('tab-conn').classList.toggle('active', tab === 'conn');
+    document.getElementById('tab-dev').classList.toggle('active',  tab === 'dev');
+    document.getElementById('tab-conn-btn').classList.toggle('active', tab === 'conn');
+    document.getElementById('tab-dev-btn').classList.toggle('active',  tab === 'dev');
+  }
+
+  // Nach erfolgreichem Verbinden automatisch zu Geräte-Tab wechseln
+  // wird von Pascal OnMQTTStateChange via MutationObserver getriggert
+  var _lastConnLabel = '';
+  setInterval(function() {
+    var lbl = document.getElementById('connLabel');
+    if (!lbl) return;
+    var txt = lbl.innerText;
+    if (txt === 'VERBUNDEN' && _lastConnLabel !== 'VERBUNDEN') {
+      switchTab('dev');
+    }
+    _lastConnLabel = txt;
+  }, 500);
+</script>
+
+<script src="$(ProjectName).js"></script>
+</body>
+</html>
