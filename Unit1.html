@@ -357,6 +357,113 @@
     }
     .btn-clear:hover { color: var(--text); border-color: var(--text); }
 
+    /* ── Grundriss ── */
+    .floor-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 0;
+    }
+    .floor-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+    }
+    .lamp {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 5;
+    }
+    .lamp-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 3px solid var(--muted);
+      transition: all 0.2s;
+      margin: 0 auto;
+    }
+    .lamp.on .lamp-dot {
+      background: var(--accent);
+      border-color: #fff;
+      box-shadow: 0 0 16px var(--accent), 0 0 32px var(--accent);
+      animation: lampPulse 2s ease-in-out infinite;
+    }
+    .lamp.offline .lamp-dot {
+      border-color: var(--danger);
+      border-style: dashed;
+    }
+    .lamp-demo .lamp-dot {
+      border-color: var(--accent2);
+      border-style: dotted;
+    }
+    .lamp-demo.on .lamp-dot {
+      background: var(--accent2);
+      border-color: #fff;
+      border-style: solid;
+      box-shadow: 0 0 16px var(--accent2);
+    }
+    .lamp-label {
+      position: absolute;
+      top: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-ui);
+      text-align: center;
+      white-space: nowrap;
+      pointer-events: none;
+      background: rgba(13, 15, 20, 0.85);
+      padding: 3px 8px;
+      border-radius: 4px;
+      line-height: 1.2;
+    }
+    .lamp-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.5px;
+    }
+    .lamp.on .lamp-name { color: var(--accent); }
+    .lamp.offline .lamp-name { color: var(--danger); }
+    .lamp-demo .lamp-name { color: var(--accent2); }
+    .lamp-info {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+    @keyframes lampPulse {
+      0%,100% { box-shadow: 0 0 12px var(--accent), 0 0 24px var(--accent); }
+      50%     { box-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent); }
+    }
+    .floor-legend {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .leg-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .leg-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .leg-on      { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+    .leg-off     { background: var(--card); border: 2px solid var(--muted); }
+    .leg-offline { background: var(--card); border: 2px dashed var(--danger); }
+    .leg-demo    { background: var(--card); border: 2px dotted var(--accent2); }
+
     /* ── Mobile ── */
     @media (max-width: 600px) {
       .header { padding: 16px 16px 0 16px; }
@@ -378,19 +485,11 @@
   <!-- Header -->
   <div class="header">
     <div class="header-logo">
-      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="18" cy="18" r="17" stroke="#00e5a0" stroke-width="1.5"/>
-        <circle cx="18" cy="18" r="8"  fill="rgba(0,229,160,0.15)" stroke="#00e5a0" stroke-width="1.5"/>
-        <line x1="18" y1="1"  x2="18" y2="10" stroke="#00e5a0" stroke-width="1.5"/>
-        <line x1="18" y1="26" x2="18" y2="35" stroke="#00e5a0" stroke-width="1.5"/>
-        <line x1="1"  y1="18" x2="10" y2="18" stroke="#00e5a0" stroke-width="1.5"/>
-        <line x1="26" y1="18" x2="35" y2="18" stroke="#00e5a0" stroke-width="1.5"/>
-        <circle cx="18" cy="18" r="3" fill="#00e5a0"/>
-      </svg>
+      <img src="logorw.png" alt="SmartHomeRw" style="width:42px;height:42px;border-radius:8px;">
       <div>
-        <div class="header-title">SHELLY <span>CONTROLLER</span></div>
-        <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">GEN3 · MQTT · HIVEMQ</div>
-        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.1.1 DEBUG</div>
+        <div class="header-title">SMART<span>HOME</span>RW</div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">SHELLY · MQTT · HIVEMQ</div>
+        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.0</div>
       </div>
     </div>
   </div>
@@ -403,6 +502,9 @@
     </button>
     <button class="tab-btn" id="tab-dev-btn" onclick="switchTab('dev')">
       ⚡ GERÄTE
+    </button>
+    <button class="tab-btn" id="tab-plan-btn" onclick="switchTab('plan')">
+      🏠 GRUNDRISS
     </button>
   </div>
 
@@ -488,20 +590,147 @@
       </div>
       <div class="log-body" id="logBody"></div>
     </div>
+  <!-- ── TAB 3: Grundriss ── -->
+  <div class="tab-page" id="tab-plan">
+
+    <div class="section-title">WOHNUNG</div>
+    <div class="panel" style="padding:14px">
+      <div class="floor-wrap" id="floorWrap">
+        <img src="grundriss.png" class="floor-img" alt="Grundriss" id="floorImg">
+
+        <!-- Wohnzimmer-Lampe (echter Shelly) -->
+        <div class="lamp lamp-real off" id="lamp-wohnzimmer"
+             style="left:51%; top:33%"
+             title="Wohnzimmer">
+          <div class="lamp-dot"></div>
+          <div class="lamp-label">
+            <div class="lamp-name">Wohnzimmer</div>
+            <div class="lamp-info" id="lamp-wohnzimmer-info">– W</div>
+          </div>
+        </div>
+
+        <!-- Schlafzimmer (Demo) -->
+        <div class="lamp lamp-demo off"
+             style="left:25%; top:64%"
+             title="Schlafzimmer (Demo)"
+             onclick="toggleDemoLamp(this)">
+          <div class="lamp-dot"></div>
+          <div class="lamp-label">
+            <div class="lamp-name">Schlafzimmer</div>
+            <div class="lamp-info">DEMO</div>
+          </div>
+        </div>
+
+        <!-- Bad (Demo) -->
+        <div class="lamp lamp-demo off"
+             style="left:67%; top:75%"
+             title="Bad (Demo)"
+             onclick="toggleDemoLamp(this)">
+          <div class="lamp-dot"></div>
+          <div class="lamp-label">
+            <div class="lamp-name">Bad</div>
+            <div class="lamp-info">DEMO</div>
+          </div>
+        </div>
+
+        <!-- Küche (Demo) -->
+        <div class="lamp lamp-demo off"
+             style="left:73%; top:32%"
+             title="Küche (Demo)"
+             onclick="toggleDemoLamp(this)">
+          <div class="lamp-dot"></div>
+          <div class="lamp-label">
+            <div class="lamp-name">Küche</div>
+            <div class="lamp-info">DEMO</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legende -->
+      <div class="floor-legend">
+        <div class="leg-item"><div class="leg-dot leg-on"></div>EIN</div>
+        <div class="leg-item"><div class="leg-dot leg-off"></div>AUS</div>
+        <div class="leg-item"><div class="leg-dot leg-offline"></div>OFFLINE</div>
+        <div class="leg-item"><div class="leg-dot leg-demo"></div>DEMO</div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;font-size:13px;color:var(--muted);line-height:1.5">
+      <span style="color:var(--text);font-weight:600">Bedienung:</span>
+      Klick auf einen Lampenpunkt schaltet das Gerät ein/aus.<br>
+      <span style="color:var(--accent)">Wohnzimmer</span> ist mit dem echten Shelly verbunden,
+      die anderen Räume sind Demo-Lampen.
+    </div>
   </div>
 
 </div>
 
 <script>
   function switchTab(tab) {
-    document.getElementById('tab-conn').classList.toggle('active', tab === 'conn');
-    document.getElementById('tab-dev').classList.toggle('active',  tab === 'dev');
-    document.getElementById('tab-conn-btn').classList.toggle('active', tab === 'conn');
-    document.getElementById('tab-dev-btn').classList.toggle('active',  tab === 'dev');
+    var tabs = ['conn', 'dev', 'plan'];
+    tabs.forEach(function(t) {
+      var page = document.getElementById('tab-' + t);
+      var btn  = document.getElementById('tab-' + t + '-btn');
+      if (page) page.classList.toggle('active', t === tab);
+      if (btn)  btn.classList.toggle('active', t === tab);
+    });
   }
 
+  // Demo-Lampen einfach toggeln
+  function toggleDemoLamp(el) {
+    el.classList.toggle('on');
+  }
+
+  // Klick auf Wohnzimmer-Lampe → echtes Shelly schalten
+  document.addEventListener('DOMContentLoaded', function() {
+    var lamp = document.getElementById('lamp-wohnzimmer');
+    if (lamp) {
+      lamp.addEventListener('click', function() {
+        // Erstes Geräte-Toggle suchen und klicken
+        var firstToggle = document.querySelector('[id^="toggle-"]');
+        if (firstToggle) {
+          firstToggle.checked = !firstToggle.checked;
+          firstToggle.dispatchEvent(new Event('change'));
+        } else {
+          alert('Bitte zuerst auf Tab GERÄTE einen Shelly hinzufügen.');
+        }
+      });
+    }
+  });
+
+  // Sync: alle 1s den Wohnzimmer-Lampenstatus mit echtem Shelly abgleichen
+  setInterval(function() {
+    var lamp = document.getElementById('lamp-wohnzimmer');
+    var info = document.getElementById('lamp-wohnzimmer-info');
+    if (!lamp) return;
+
+    var firstCard = document.querySelector('[id^="devcard-"]');
+    if (!firstCard) {
+      lamp.classList.remove('on', 'offline');
+      if (info) info.innerText = 'KEIN GERÄT';
+      return;
+    }
+
+    // Online/Offline aus der Karten-CSS-Klasse
+    if (firstCard.classList.contains('offline')) {
+      lamp.classList.add('offline');
+      lamp.classList.remove('on');
+      if (info) info.innerText = 'OFFLINE';
+      return;
+    }
+    lamp.classList.remove('offline');
+
+    // Toggle-Status
+    var toggle = firstCard.querySelector('input[type="checkbox"]');
+    if (toggle && toggle.checked) lamp.classList.add('on');
+    else lamp.classList.remove('on');
+
+    // Watt-Wert aus erstem sensor-val
+    var watt = firstCard.querySelector('.sensor-val');
+    if (watt && info) info.innerText = watt.innerText;
+  }, 1000);
+
   // Nach erfolgreichem Verbinden automatisch zu Geräte-Tab wechseln
-  // wird von Pascal OnMQTTStateChange via MutationObserver getriggert
   var _lastConnLabel = '';
   setInterval(function() {
     var lbl = document.getElementById('connLabel');
