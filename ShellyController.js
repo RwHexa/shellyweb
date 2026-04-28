@@ -56621,27 +56621,6 @@ rtl.module("MQTTBridge",["System","SysUtils","JS","Web"],function () {
       BrokerURL = "wss://" + AHost + ":" + pas.SysUtils.IntToStr(APort) + "/mqtt";
       var self = this;
       
-          // ── Helper: schreibt ins UI-Log (gelb/cyan damit auffällig) ──
-          var dbg = function(msg, color) {
-            try {
-              var logBody = document.getElementById('logBody');
-              if (!logBody) return;
-              var t = new Date();
-              var ts = (''+t.getHours()).padStart(2,'0')+':'+
-                       (''+t.getMinutes()).padStart(2,'0')+':'+
-                       (''+t.getSeconds()).padStart(2,'0');
-              var div = document.createElement('div');
-              div.className = 'log-entry';
-              div.innerHTML = '<span class="log-time">'+ts+'</span>'+
-                              '<span style="color:'+(color||'#ffa502')+'">[DBG] '+msg+'</span>';
-              logBody.appendChild(div);
-              logBody.scrollTop = logBody.scrollHeight;
-            } catch(e) {}
-          };
-          self.dbg = dbg;
-      
-          dbg('mqtt.connect → ' + BrokerURL);
-      
           var options = {
             username:        AUser,
             password:        APassword,
@@ -56653,60 +56632,35 @@ rtl.module("MQTTBridge",["System","SysUtils","JS","Web"],function () {
       
           try {
             self.FClient = mqtt.connect(BrokerURL, options);
-            dbg('mqtt.connect() returned object', '#00e5a0');
           } catch(e) {
-            dbg('mqtt.connect EXCEPTION: ' + e.message, '#ff4757');
+            self.SetState(3, 'Verbindungsfehler: ' + e.message);
             return;
           }
       
-          // ── Verbunden ──
-          self.FClient.on('connect', function(connack) {
-            dbg('Event: connect (sessionPresent='+(connack&&connack.sessionPresent)+')', '#00e5a0');
+          // Enum-Werte als Zahlen (msDisconnected=0, msConnecting=1, msConnected=2, msError=3)
+          self.FClient.on('connect', function() {
             self.SetState(2, 'Verbunden mit ' + AHost);
           });
       
-          // ── Reconnect-Versuch ──
-          self.FClient.on('reconnect', function() {
-            dbg('Event: reconnect attempt');
-          });
-      
-          // ── Fehler ──
           self.FClient.on('error', function(err) {
             var msg = (err && err.message) ? err.message : String(err);
-            dbg('Event: error → ' + msg, '#ff4757');
             self.SetState(3, 'Fehler: ' + msg);
           });
       
-          // ── Verbindung getrennt ──
           self.FClient.on('close', function() {
-            dbg('Event: close', '#ffa502');
             self.SetState(0, 'Verbindung getrennt');
           });
       
-          // ── Offline ──
           self.FClient.on('offline', function() {
-            dbg('Event: offline', '#ffa502');
             self.SetState(0, 'Client offline');
           });
       
-          // ── ALLE eingehenden Pakete (auch SUBACK, PUBACK etc.) ──
-          self.FClient.on('packetreceive', function(packet) {
-            if (packet && packet.cmd) {
-              dbg('Paket empfangen: ' + packet.cmd +
-                  (packet.topic ? ' topic='+packet.topic : '') +
-                  (packet.granted ? ' granted='+JSON.stringify(packet.granted) : ''),
-                  '#0099ff');
-            }
-          });
-      
-          // ── Nachricht empfangen ──
           self.FClient.on('message', function(topic, message) {
             try {
               var payload = message ? message.toString() : '';
-              dbg('Event: message topic='+topic+' len='+payload.length, '#00e5a0');
               if (self.FOnMessage) self.FOnMessage(topic, payload);
             } catch(e) {
-              dbg('message handler ERROR: ' + e.message, '#ff4757');
+              console.error('MQTT message handler error:', e);
             }
           });
     };
@@ -56723,21 +56677,10 @@ rtl.module("MQTTBridge",["System","SysUtils","JS","Web"],function () {
     };
     this.Subscribe = function (ATopic) {
       if (this.FState !== $mod.TMQTTState.msConnected) throw pas.SysUtils.Exception.$create("Create$1",["Nicht verbunden"]);
-      var self = this;
       try {
-        self.FClient.subscribe(ATopic, { qos: 0 }, function(err, granted) {
-          if (self.dbg) {
-            if (err) {
-              self.dbg('Subscribe FEHLER ' + ATopic + ': ' + err.message, '#ff4757');
-            } else if (granted && granted.length > 0) {
-              self.dbg('Subscribe OK: ' + granted[0].topic + ' qos=' + granted[0].qos, '#00e5a0');
-            } else {
-              self.dbg('Subscribe ohne grant: ' + ATopic, '#ffa502');
-            }
-          }
-        });
+        this.FClient.subscribe(ATopic, { qos: 0 });
       } catch(e) {
-        if (self.dbg) self.dbg('Subscribe EXCEPTION ' + ATopic + ': ' + e.message, '#ff4757');
+        console.error('Subscribe error:', ATopic, e);
       };
     };
     this.Unsubscribe = function (ATopic) {
@@ -56748,12 +56691,13 @@ rtl.module("MQTTBridge",["System","SysUtils","JS","Web"],function () {
     };
     this.Publish = function (ATopic, APayload, ARetain, AQOS) {
       if (this.FState !== $mod.TMQTTState.msConnected) throw pas.SysUtils.Exception.$create("Create$1",["Nicht verbunden"]);
-      var self = this;
       try {
-        self.FClient.publish(ATopic, APayload, { retain: ARetain, qos: AQOS });
-        if (self.dbg) self.dbg('Publish → ' + ATopic + ' (' + APayload.length + ' bytes)', '#00e5a0');
+        this.FClient.publish(ATopic, APayload, {
+          retain: ARetain,
+          qos:    AQOS
+        });
       } catch(e) {
-        if (self.dbg) self.dbg('Publish EXCEPTION: ' + e.message, '#ff4757');
+        console.error('Publish error:', ATopic, e);
       };
     };
   });
