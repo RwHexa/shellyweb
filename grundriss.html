@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grundriss</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #161921;
+      color: #e8ecf0;
+      font-family: 'Rajdhani', Arial, sans-serif;
+      padding: 14px;
+      min-height: 100vh;
+    }
+    .floor-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      background: #1a1d2a;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .floor-img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .lamp {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 5;
+    }
+    .lamp-dot {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: #1e2230;
+      border: 3px solid #6b7494;
+      margin: 0 auto;
+      transition: all 0.3s;
+    }
+    .lamp.on .lamp-dot {
+      background: #00e5a0;
+      border-color: #fff;
+      box-shadow: 0 0 16px #00e5a0, 0 0 32px #00e5a0;
+    }
+    .lamp.offline .lamp-dot {
+      border-color: #ff4757;
+      border-style: dashed;
+    }
+    .lamp.demo .lamp-dot {
+      border-color: #0099ff;
+      border-style: dotted;
+    }
+    .lamp.demo.on .lamp-dot {
+      background: #0099ff;
+      border-color: #fff;
+      border-style: solid;
+      box-shadow: 0 0 16px #0099ff;
+    }
+    .lamp-label {
+      background: rgba(13,15,20,0.85);
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-align: center;
+      margin-top: 4px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .lamp-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #e8ecf0;
+      letter-spacing: 0.5px;
+    }
+    .lamp.on .lamp-name { color: #00e5a0; }
+    .lamp.offline .lamp-name { color: #ff4757; }
+    .lamp.demo .lamp-name { color: #0099ff; }
+    .lamp-info {
+      font-family: monospace;
+      font-size: 9px;
+      color: #6b7494;
+      margin-top: 1px;
+    }
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+      font-family: monospace;
+      font-size: 11px;
+      color: #6b7494;
+    }
+    .leg-item { display: flex; align-items: center; gap: 6px; }
+    .leg-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .leg-on      { background: #00e5a0; box-shadow: 0 0 6px #00e5a0; }
+    .leg-off     { background: #1e2230; border: 2px solid #6b7494; }
+    .leg-offline { background: #1e2230; border: 2px dashed #ff4757; }
+    .leg-demo    { background: #1e2230; border: 2px dotted #0099ff; }
+    .info {
+      margin-top: 16px;
+      padding: 14px 18px;
+      background: #1e2230;
+      border: 1px solid #2a2f42;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #6b7494;
+      line-height: 1.5;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="floor-wrap">
+    <img src="grundriss.png" alt="Grundriss" class="floor-img">
+
+    <div class="lamp" id="lampWohnzimmer" style="left:51%;top:33%" onclick="onWohnzimmerClick()">
+      <div class="lamp-dot"></div>
+      <div class="lamp-label">
+        <div class="lamp-name">Wohnzimmer</div>
+        <div class="lamp-info" id="lampInfo">– W</div>
+      </div>
+    </div>
+
+    <div class="lamp demo" style="left:25%;top:64%" onclick="toggleDemo(this)">
+      <div class="lamp-dot"></div>
+      <div class="lamp-label">
+        <div class="lamp-name">Schlafzimmer</div>
+        <div class="lamp-info">DEMO</div>
+      </div>
+    </div>
+
+    <div class="lamp demo" style="left:67%;top:75%" onclick="toggleDemo(this)">
+      <div class="lamp-dot"></div>
+      <div class="lamp-label">
+        <div class="lamp-name">Bad</div>
+        <div class="lamp-info">DEMO</div>
+      </div>
+    </div>
+
+    <div class="lamp demo" style="left:73%;top:32%" onclick="toggleDemo(this)">
+      <div class="lamp-dot"></div>
+      <div class="lamp-label">
+        <div class="lamp-name">Küche</div>
+        <div class="lamp-info">DEMO</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot leg-on"></div>EIN</div>
+    <div class="leg-item"><div class="leg-dot leg-off"></div>AUS</div>
+    <div class="leg-item"><div class="leg-dot leg-offline"></div>OFFLINE</div>
+    <div class="leg-item"><div class="leg-dot leg-demo"></div>DEMO</div>
+  </div>
+
+  <div class="info">
+    <span style="color:#e8ecf0;font-weight:600">Bedienung:</span> Klick auf Lampenpunkt schaltet das Gerät.<br>
+    <span style="color:#00e5a0">Wohnzimmer</span> = echter Shelly · andere Räume = Demo
+  </div>
+
+  <script>
+    function toggleDemo(el) {
+      el.classList.toggle('on');
+    }
+
+    // Klick auf Wohnzimmer → Parent-Frame benachrichtigen
+    function onWohnzimmerClick() {
+      window.parent.postMessage({ action: 'toggleShelly' }, '*');
+    }
+
+    // Empfange Status vom Parent
+    window.addEventListener('message', function(event) {
+      var data = event.data || {};
+      var lamp = document.getElementById('lampWohnzimmer');
+      var info = document.getElementById('lampInfo');
+      if (!lamp) return;
+
+      lamp.classList.remove('on', 'offline');
+
+      if (data.state === 'offline') {
+        lamp.classList.add('offline');
+        if (info) info.innerText = 'OFFLINE';
+      } else if (data.state === 'noDevice') {
+        if (info) info.innerText = 'KEIN GERÄT';
+      } else {
+        if (data.on) lamp.classList.add('on');
+        if (info && data.watt) info.innerText = data.watt;
+      }
+    });
+
+    // Beim Laden: Parent fragen nach aktuellem Status
+    window.parent.postMessage({ action: 'requestStatus' }, '*');
+  </script>
+</body>
+</html>
