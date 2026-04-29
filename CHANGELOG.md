@@ -1,11 +1,44 @@
-# Changelog – Shelly Controller (TMS Web Core)
+# Changelog – SmartHomeRw (Shelly Controller)
 
 Browserbasierte Anwendung zur Steuerung von Shelly Gen3 Geräten via MQTT
 über HiveMQ Cloud. Läuft im Desktop- und Android-Browser.
 
 ---
 
-## [v1.1.2] – 27.04.2026 (aktuell)
+## [v1.2.0] – 28.04.2026 (aktuell)
+
+### Hinzugefügt
+- **Grundriss-Seite** als eigenständige HTML-Datei (`wohnung.html`)
+  - Eigenes Wohnung-Bild mit klickbaren Lampen-Overlays
+  - Wohnzimmer-Lampe steuert echten Shelly (über localStorage geteilt)
+  - Drei Demo-Lampen (Schlafzimmer, Bad, Küche) zum Testen
+  - Eigene MQTT-Verbindung (unabhängig von TMS Web Core)
+  - Auto-Connect beim Seitenaufruf via gespeicherten Zugangsdaten
+- **Link-Navigation** im Header
+  - "🏠 Grundriss" auf der Steuerungs-Seite
+  - "⚡ Steuerung →" auf der Grundriss-Seite
+- Status-Anzeige (Online/Offline/Watt) auch auf Grundriss-Seite
+
+### Behoben
+- **localStorage-Bug** in `Unit1.pas` `SaveDevices`
+  - Pascal-Variable `JSON: string` kollidierte mit JS-eingebautem `JSON`-Objekt
+  - Result: localStorage enthielt `[object JSON]` statt der Geräteliste
+  - Fix: Variable umbenannt zu `JSONStr`
+  - Geräte werden jetzt korrekt persistiert und über Seiten geteilt
+
+### Architektur
+- Zwei eigenständige HTML-Seiten teilen sich Daten über localStorage
+  - `Project1.html` = TMS Web Core Steuerungs-App
+  - `wohnung.html` = pure HTML-Seite mit eigenem MQTT-Client
+- Lösung umgeht TMS Web Core Form-Layout-Probleme mit Bildern komplett
+
+### Hinweise
+- Beim Wechsel zwischen Steuerungs- und Grundriss-Seite wird MQTT-Verbindung
+  neu aufgebaut (~1-2 Sekunden) – technisch bedingt durch Browser-Seitenwechsel
+
+---
+
+## [v1.1.2] – 27.04.2026
 
 ### Aufgeräumt
 - `MQTTBridge.pas`: Debug-Logging vollständig entfernt
@@ -55,14 +88,19 @@ Browserbasierte Anwendung zur Steuerung von Shelly Gen3 Geräten via MQTT
   - `v1.x.0` = Pascal-Code Änderungen (Kompilieren + GitHub)
   - `v2.0.0` = größere neue Features
 
+### Branding
+- Titel von "SHELLY CONTROLLER" zu **"SMARTHOMERW"** geändert
+- Eigenes Logo (`logorw.png`) im Header
+
 ---
 
 ## [v1.0.4] – 27.04.2026
 
 ### Veröffentlichung
 - App auf **GitHub Pages** gehostet
-  - Repository: `rwhexa/shelly-controller`
-  - URL: `https://rwhexa.github.io/shelly-controller/Project1.html`
+  - Repository: `rwhexa/shelly-controller` (stabile Backup-Version)
+  - Repository: `rwhexa/shellyweb` (Entwicklungs-Version)
+  - URL: `https://rwhexa.github.io/shellyweb/Project1.html`
 - Weltweit erreichbar von jedem Gerät mit Browser
 - Updates: einfach Dateien im Repository ersetzen
 
@@ -158,34 +196,58 @@ pas.ShellyDevice.TShellyDevice.ParseSwitchStatus(this, params['switch:0']);
 
 ---
 
-## Architektur
+## Architektur (v1.2.0)
 
 ```
-Browser (TMS Web Core → JavaScript)
-    ↕ WSS Port 8884
-HiveMQ Cloud (MQTT Broker, TLS)
-    ↕ MQTT Port 8883
-Shelly 1PM Mini Gen3
+┌─────────────────────────────┐    ┌─────────────────────────────┐
+│  Project1.html              │    │  wohnung.html               │
+│  (TMS Web Core)             │    │  (pure HTML/JavaScript)     │
+│  - Tab Verbindung           │    │  - Wohnung-Bild             │
+│  - Tab Geräte               │←──→│  - Klickbare Lampen         │
+│  - Schalten + Status        │    │  - Eigener MQTT-Client      │
+│  - Logo & Versionsanzeige   │    │  - Auto-Connect             │
+│  - Link "🏠 Grundriss"      │    │  - Link "⚡ Steuerung →"    │
+└──────────────┬──────────────┘    └──────────────┬──────────────┘
+               │                                  │
+               └─────────► localStorage ◄─────────┘
+                          (Host, User, Pass, Devices)
+
+                              ↕ WSS Port 8884
+
+                    ┌─────────────────────┐
+                    │  HiveMQ Cloud       │
+                    │  MQTT Broker (TLS)  │
+                    └──────────┬──────────┘
+                               │
+                               ↕ MQTT Port 8883
+                    ┌─────────────────────┐
+                    │  Shelly 1PM Mini    │
+                    │  Gen3               │
+                    └─────────────────────┘
 ```
 
-## Projektdateien
+## Projektdateien (v1.2.0)
 
-| Datei | Zweck |
-|-------|-------|
-| `Project1.dpr` | Delphi Projekt-Hauptdatei |
-| `Unit1.pas` | Hauptformular: UI, MQTT-Callbacks, Geräteverwaltung |
-| `Unit1.dfm` | Formular-Layout (TWebTimer 30s) |
-| `Unit1.html` | HTML/CSS Frontend mit Tab-Navigation |
-| `Project1.html` | TMS-Template (`rtl.run()` Einstieg) |
-| `MQTTBridge.pas` | Wrapper um MQTT.js JavaScript-Library |
-| `ShellyDevice.pas` | Shelly Gen3 Gerät: Topics, RPC, Status |
+| Datei | Zweck | Quelle |
+|-------|-------|--------|
+| `Project1.dpr` | Delphi Projekt-Hauptdatei | Delphi |
+| `Unit1.pas` | Hauptformular, MQTT-Logik, localStorage | Delphi |
+| `Unit1.dfm` | Formular-Layout (Auto-Refresh Timer) | Delphi |
+| `Unit1.html` | Frontend mit Tab-Nav + Grundriss-Link | Delphi |
+| `Project1.html` | TMS-Template (Einstiegspunkt) | Delphi |
+| `MQTTBridge.pas` | Wrapper um MQTT.js | Delphi |
+| `ShellyDevice.pas` | Shelly Gen3 Geräte-Logik | Delphi |
+| `wohnung.html` | Eigenständige Grundriss-Seite | Manuell |
+| `grundriss.png` | Wohnung 3D-Bild | Manuell |
+| `logorw.png` | Logo (Rw) | Manuell |
 
 ## Hosting
 
-- **Lokal (Entwicklung):** Delphi → Run, oder `python -m http.server 8000` im `TMSWeb\Debug` Ordner
-- **Produktiv:** GitHub Pages
-  - URL: `https://rwhexa.github.io/shelly-controller/Project1.html`
-  - Update: 3 Dateien (`Project1.html`, `Unit1.html`, `ShellyController.js`) im Repository ersetzen
+- **Lokal (Entwicklung):** Delphi Run, oder `python -m http.server 8000` im `TMSWeb\Debug` Ordner
+- **Produktiv:**
+  - GitHub Pages Backup: `https://rwhexa.github.io/shelly-controller/Project1.html`
+  - GitHub Pages Aktuell: `https://rwhexa.github.io/shellyweb/Project1.html`
+  - Update: alle Dateien aus `TMSWeb\Debug\` + `wohnung.html`/`grundriss.png` hochladen
 
 ## Verwendete Bibliotheken
 
@@ -193,4 +255,3 @@ Shelly 1PM Mini Gen3
 - **Google Fonts** – Rajdhani (UI), JetBrains Mono (Monospace)
 - **TMS Web Core** v2.4.6.1 – Pascal-zu-JavaScript Compiler
 - **pas2js** v2.3.1
-
