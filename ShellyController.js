@@ -61448,15 +61448,15 @@ rtl.module("Unit1",["System","SysUtils","Classes","JS","Web","WEBLib.Forms","WEB
     };
     this.SaveDevices = function () {
       var I = 0;
-      var jSON = "";
-      jSON = "[";
+      var JSONStr = "";
+      JSONStr = "[";
       for (var $l = 0, $end = rtl.length(this.FDevices) - 1; $l <= $end; $l++) {
         I = $l;
-        if (I > 0) jSON = jSON + ",";
-        jSON = jSON + '{"id":"' + this.FDevices[I].FDeviceID + '","name":"' + this.FDevices[I].FName + '"}';
+        if (I > 0) JSONStr = JSONStr + ",";
+        JSONStr = JSONStr + '{"id":"' + this.FDevices[I].FDeviceID + '","name":"' + this.FDevices[I].FName + '"}';
       };
-      jSON = jSON + "]";
-      try { localStorage.setItem('shelly_devices', JSON); } catch(e) {};
+      JSONStr = JSONStr + "]";
+      try { localStorage.setItem('shelly_devices', JSONStr); } catch(e) {};
     };
     this.LoadDevices = function () {
       var DevJSON = "";
