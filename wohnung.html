@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wohnung Grundriss · SmartHomeRw</title>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0d0f14; --surface:#161921; --card:#1e2230; --border:#2a2f42;
+      --accent:#00e5a0; --accent2:#0099ff; --danger:#ff4757; --warn:#ffa502;
+      --text:#e8ecf0; --muted:#6b7494;
+      --font-ui:'Rajdhani',sans-serif; --font-mono:'JetBrains Mono',monospace;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      background:var(--bg); color:var(--text);
+      font-family:var(--font-ui); min-height:100vh; padding:0 0 40px 0;
+    }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:
+        linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+      background-size:40px 40px;
+      pointer-events:none; z-index:0;
+    }
+    #wrapper { position:relative; z-index:1; max-width:900px; margin:0 auto; padding:20px 24px; }
+
+    /* Header */
+    .header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding-bottom:20px; margin-bottom:20px;
+      border-bottom:1px solid var(--border);
+      flex-wrap:wrap; gap:14px;
+    }
+    .header-logo { display:flex; align-items:center; gap:14px; }
+    .header-logo img { width:42px; height:42px; border-radius:8px; }
+    .header-title { font-size:22px; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
+    .header-title span { color:var(--accent); }
+    .nav-link {
+      background:var(--surface); color:var(--text); text-decoration:none;
+      border:1px solid var(--border); border-radius:8px;
+      padding:10px 18px; font-family:var(--font-ui);
+      font-size:13px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase;
+      transition:all 0.2s;
+    }
+    .nav-link:hover { background:var(--card); border-color:var(--accent2); color:var(--accent); }
+
+    /* Status Badge */
+    .conn-badge {
+      display:flex; align-items:center; gap:10px;
+      background:var(--surface); border:1px solid var(--border); border-radius:8px;
+      padding:10px 14px; margin-bottom:20px;
+    }
+    .conn-dot {
+      width:9px; height:9px; border-radius:50%;
+      background:var(--muted); flex-shrink:0; transition:background 0.3s;
+    }
+    .conn-dot.connected    { background:var(--accent); box-shadow:0 0 8px var(--accent); }
+    .conn-dot.connecting   { background:var(--warn); animation:pulse 1s infinite; }
+    .conn-dot.disconnected { background:var(--danger); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    #connLabel { font-family:var(--font-mono); font-size:12px; color:var(--muted); }
+
+    /* Section */
+    .section-title {
+      font-size:11px; font-weight:600; letter-spacing:3px;
+      text-transform:uppercase; color:var(--muted); margin-bottom:12px;
+    }
+
+    /* Floor */
+    .floor-panel {
+      background:var(--surface); border:1px solid var(--border); border-radius:12px;
+      padding:14px; margin-bottom:20px;
+    }
+    .floor-wrap {
+      position:relative; width:100%; max-width:700px; margin:0 auto;
+      background:#1a1d2a; border-radius:8px; overflow:hidden;
+    }
+    .floor-img { width:100%; height:auto; display:block; }
+
+    .lamp { position:absolute; transform:translate(-50%,-50%); cursor:pointer; z-index:5; }
+    .lamp-dot {
+      width:24px; height:24px; border-radius:50%;
+      background:#1e2230; border:3px solid var(--muted);
+      margin:0 auto; transition:all 0.3s;
+    }
+    .lamp.on .lamp-dot {
+      background:var(--accent); border-color:#fff;
+      box-shadow:0 0 16px var(--accent), 0 0 32px var(--accent);
+      animation:glow 2s ease-in-out infinite;
+    }
+    .lamp.offline .lamp-dot { border-color:var(--danger); border-style:dashed; }
+    .lamp.demo .lamp-dot { border-color:var(--accent2); border-style:dotted; }
+    .lamp.demo.on .lamp-dot {
+      background:var(--accent2); border-color:#fff; border-style:solid;
+      box-shadow:0 0 16px var(--accent2);
+    }
+    @keyframes glow {
+      0%,100% { box-shadow:0 0 12px var(--accent), 0 0 24px var(--accent); }
+      50%     { box-shadow:0 0 20px var(--accent), 0 0 40px var(--accent); }
+    }
+    .lamp-label {
+      background:rgba(13,15,20,0.85);
+      padding:3px 8px; border-radius:4px; text-align:center;
+      margin-top:4px; line-height:1.2; white-space:nowrap;
+    }
+    .lamp-name {
+      font-size:11px; font-weight:700; color:var(--text); letter-spacing:0.5px;
+    }
+    .lamp.on .lamp-name      { color:var(--accent); }
+    .lamp.offline .lamp-name { color:var(--danger); }
+    .lamp.demo .lamp-name    { color:var(--accent2); }
+    .lamp-info {
+      font-family:var(--font-mono); font-size:9px; color:var(--muted); margin-top:1px;
+    }
+
+    /* Legende */
+    .legend {
+      display:flex; justify-content:center; gap:18px; margin-top:14px;
+      flex-wrap:wrap; font-family:var(--font-mono); font-size:11px; color:var(--muted);
+    }
+    .leg-item { display:flex; align-items:center; gap:6px; }
+    .leg-dot { width:12px; height:12px; border-radius:50%; }
+    .leg-on      { background:var(--accent); box-shadow:0 0 6px var(--accent); }
+    .leg-off     { background:var(--card); border:2px solid var(--muted); }
+    .leg-offline { background:var(--card); border:2px dashed var(--danger); }
+    .leg-demo    { background:var(--card); border:2px dotted var(--accent2); }
+
+    /* Info box */
+    .info {
+      background:var(--surface); border:1px solid var(--border); border-radius:12px;
+      padding:14px 18px; font-size:13px; color:var(--muted); line-height:1.5;
+    }
+
+    @media (max-width:600px) {
+      #wrapper { padding:14px 14px; }
+      .header { flex-direction:column; align-items:flex-start; }
+      .header-title { font-size:18px; }
+    }
+  </style>
+</head>
+<body>
+<div id="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-logo">
+      <img src="logorw.png" alt="SmartHomeRw">
+      <div>
+        <div class="header-title">SMART<span>HOME</span>RW</div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">GRUNDRISS</div>
+        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.0</div>
+      </div>
+    </div>
+    <a href="Project1.html" class="nav-link">⚡ Steuerung →</a>
+  </div>
+
+  <!-- Status -->
+  <div class="conn-badge">
+    <div class="conn-dot" id="connDot"></div>
+    <span id="connLabel">VERBINDE...</span>
+  </div>
+
+  <!-- Floor Plan -->
+  <div class="section-title">WOHNUNG</div>
+  <div class="floor-panel">
+    <div class="floor-wrap">
+      <img src="grundriss.png" alt="Grundriss" class="floor-img">
+
+      <!-- Wohnzimmer-Lampe (echter Shelly) -->
+      <div class="lamp" id="lampWohnzimmer" style="left:51%;top:33%" onclick="onWohnzimmerClick()">
+        <div class="lamp-dot"></div>
+        <div class="lamp-label">
+          <div class="lamp-name">Wohnzimmer</div>
+          <div class="lamp-info" id="lampInfo">– W</div>
+        </div>
+      </div>
+
+      <!-- Schlafzimmer (Demo) -->
+      <div class="lamp demo" style="left:25%;top:64%" onclick="toggleDemo(this)">
+        <div class="lamp-dot"></div>
+        <div class="lamp-label">
+          <div class="lamp-name">Schlafzimmer</div>
+          <div class="lamp-info">DEMO</div>
+        </div>
+      </div>
+
+      <!-- Bad (Demo) -->
+      <div class="lamp demo" style="left:67%;top:75%" onclick="toggleDemo(this)">
+        <div class="lamp-dot"></div>
+        <div class="lamp-label">
+          <div class="lamp-name">Bad</div>
+          <div class="lamp-info">DEMO</div>
+        </div>
+      </div>
+
+      <!-- Küche (Demo) -->
+      <div class="lamp demo" style="left:73%;top:32%" onclick="toggleDemo(this)">
+        <div class="lamp-dot"></div>
+        <div class="lamp-label">
+          <div class="lamp-name">Küche</div>
+          <div class="lamp-info">DEMO</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legende -->
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot leg-on"></div>EIN</div>
+      <div class="leg-item"><div class="leg-dot leg-off"></div>AUS</div>
+      <div class="leg-item"><div class="leg-dot leg-offline"></div>OFFLINE</div>
+      <div class="leg-item"><div class="leg-dot leg-demo"></div>DEMO</div>
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="info">
+    <span style="color:var(--text);font-weight:600">Bedienung:</span>
+    Klick auf Lampenpunkt schaltet das Gerät.<br>
+    <span style="color:var(--accent)">Wohnzimmer</span> = echter Shelly · andere Räume = Demo<br>
+    <span style="color:var(--muted);font-size:11px">Verbindungsdaten werden aus der Steuerungs-App geladen (localStorage).</span>
+  </div>
+
+</div>
+
+<script>
+// ────────────────────────────────────────────────────────────
+// SmartHomeRw Wohnung-Seite
+// Eigener MQTT-Client, nutzt HiveMQ-Daten aus localStorage
+// ────────────────────────────────────────────────────────────
+
+var mqttClient = null;
+var deviceID   = null;
+var deviceName = 'Wohnzimmer';
+var rpcMsgId   = 0;
+
+// Status-Anzeige aktualisieren
+function setConnState(state, label) {
+  var dot = document.getElementById('connDot');
+  var lbl = document.getElementById('connLabel');
+  dot.className = 'conn-dot ' + state;
+  lbl.innerText = label;
+}
+
+// Lampen-Anzeige updaten
+function updateLamp(state, on, watt) {
+  var lamp = document.getElementById('lampWohnzimmer');
+  var info = document.getElementById('lampInfo');
+  lamp.classList.remove('on', 'offline');
+
+  if (state === 'offline') {
+    lamp.classList.add('offline');
+    info.innerText = 'OFFLINE';
+    return;
+  }
+  if (state === 'noDevice') {
+    info.innerText = 'KEIN GERÄT';
+    return;
+  }
+  if (on) lamp.classList.add('on');
+  if (watt !== undefined && watt !== null)
+    info.innerText = (watt > 0 ? watt.toFixed(1) + ' W' : '0 W');
+}
+
+// Demo-Lampen einfach toggeln
+function toggleDemo(el) { el.classList.toggle('on'); }
+
+// Klick auf Wohnzimmer → Schalt-Befehl senden
+function onWohnzimmerClick() {
+  if (!mqttClient || !deviceID) {
+    alert('Nicht verbunden oder kein Gerät gespeichert.\nBitte zuerst in der Steuerungs-App verbinden und Gerät hinzufügen.');
+    return;
+  }
+  // Aktueller Toggle-Zustand der Lampe
+  var lamp = document.getElementById('lampWohnzimmer');
+  var newOn = !lamp.classList.contains('on');
+
+  // RPC: Switch.Set
+  rpcMsgId++;
+  var replyTopic = deviceID + '/rpc/reply';
+  var payload = JSON.stringify({
+    id:     rpcMsgId,
+    src:    replyTopic,
+    method: 'Switch.Set',
+    params: { id: 0, on: newOn }
+  });
+  mqttClient.publish(deviceID + '/rpc', payload);
+}
+
+// Status-Anfrage an Shelly
+function requestStatus() {
+  if (!mqttClient || !deviceID) return;
+  rpcMsgId++;
+  var replyTopic = deviceID + '/rpc/reply';
+  var payload = JSON.stringify({
+    id:     rpcMsgId,
+    src:    replyTopic,
+    method: 'Switch.GetStatus',
+    params: { id: 0 }
+  });
+  mqttClient.publish(deviceID + '/rpc', payload);
+}
+
+// MQTT-Nachricht verarbeiten
+function onMqttMessage(topic, message) {
+  var payload = message.toString();
+
+  // Online-Status
+  if (topic === deviceID + '/online') {
+    if (payload.toLowerCase().trim() === 'true') {
+      requestStatus();
+    } else {
+      updateLamp('offline');
+    }
+    return;
+  }
+
+  // Events / RPC-Antworten
+  if (topic === deviceID + '/events/rpc' || topic === deviceID + '/rpc/reply') {
+    var parsed;
+    try { parsed = JSON.parse(payload); } catch(e) { return; }
+
+    var sw = null;
+    if (parsed.method === 'NotifyStatus' && parsed.params) {
+      sw = parsed.params['switch:0'];
+    } else if (parsed.result) {
+      sw = parsed.result;
+    }
+    if (sw) {
+      updateLamp('online', sw.output, sw.apower);
+    }
+  }
+}
+
+// MQTT verbinden
+function connect() {
+  // Daten aus localStorage holen
+  var host = localStorage.getItem('shelly_host');
+  var port = localStorage.getItem('shelly_port') || '8884';
+  var user = localStorage.getItem('shelly_user');
+  var pass = localStorage.getItem('shelly_pass');
+  var devs = localStorage.getItem('shelly_devices');
+
+  if (!host || !user) {
+    setConnState('disconnected', 'KEINE ZUGANGSDATEN');
+    updateLamp('noDevice');
+    return;
+  }
+
+  // Erstes Gerät aus Liste verwenden
+  if (devs) {
+    try {
+      var arr = JSON.parse(devs);
+      if (arr.length > 0) {
+        deviceID = arr[0].id;
+        deviceName = arr[0].name;
+      }
+    } catch(e) {}
+  }
+
+  if (!deviceID) {
+    setConnState('disconnected', 'KEIN GERÄT GESPEICHERT');
+    updateLamp('noDevice');
+    return;
+  }
+
+  // Lampenname aus localStorage übernehmen
+  document.querySelector('#lampWohnzimmer .lamp-name').innerText = deviceName;
+
+  // MQTT-Verbindung
+  setConnState('connecting', 'VERBINDE MIT ' + host + ' ...');
+  var url = 'wss://' + host + ':' + port + '/mqtt';
+  var clientId = 'wohnung-' + Math.floor(Math.random() * 99999);
+
+  mqttClient = mqtt.connect(url, {
+    username: user,
+    password: pass,
+    clientId: clientId,
+    clean:    true,
+    reconnectPeriod: 5000,
+    connectTimeout:  10000
+  });
+
+  mqttClient.on('connect', function() {
+    setConnState('connected', 'VERBUNDEN · ' + deviceID);
+    // Topics abonnieren
+    mqttClient.subscribe(deviceID + '/online',     { qos: 0 });
+    mqttClient.subscribe(deviceID + '/events/rpc', { qos: 0 });
+    mqttClient.subscribe(deviceID + '/rpc/reply',  { qos: 0 });
+    requestStatus();
+  });
+
+  mqttClient.on('error', function(err) {
+    setConnState('disconnected', 'FEHLER: ' + (err && err.message ? err.message : 'unbekannt'));
+  });
+
+  mqttClient.on('close',   function() { setConnState('disconnected', 'GETRENNT'); });
+  mqttClient.on('offline', function() { setConnState('disconnected', 'OFFLINE'); });
+  mqttClient.on('message', onMqttMessage);
+}
+
+// Alle 30 Sekunden Status nachfragen
+setInterval(function() {
+  if (mqttClient && mqttClient.connected) requestStatus();
+}, 30000);
+
+// Sobald Seite geladen ist
+window.addEventListener('load', connect);
+</script>
+
+</body>
+</html>
