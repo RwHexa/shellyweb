@@ -158,7 +158,7 @@
       <div>
         <div class="header-title">SMART<span>HOME</span>RW</div>
         <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">GRUNDRISS</div>
-        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.4</div>
+        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.5</div>
       </div>
     </div>
     <a href="Project1.html" class="nav-link">⚡ Steuerung →</a>
@@ -228,7 +228,7 @@
 
 <script>
 // ────────────────────────────────────────────────────────────
-// SmartHomeRw Wohnung-Seite v1.2.4
+// SmartHomeRw Wohnung-Seite v1.2.5
 // Verbessert: stabileres Schalten mit Connection-Check
 // ────────────────────────────────────────────────────────────
 
@@ -308,25 +308,41 @@ function onWohnzimmerClick() {
   sendSwitchSet(newOn);
 }
 
-// Switch.Set per Command-Topic senden (einfacher als RPC)
+// Switch.Set per Command-Topic senden
 function sendSwitchSet(newOn) {
-  // Shelly Gen3 unterstützt:
-  //   <deviceID>/command/switch:0 mit "on" / "off" / "toggle"
   var topic   = deviceID + '/command/switch:0';
   var command = newOn ? 'on' : 'off';
 
-  console.log('[SEND] ' + topic + ' = ' + command);
+  console.log('[SEND] ' + topic + ' = ' + command + ' · connected=' + (mqttClient && mqttClient.connected));
+
+  // Wenn nicht verbunden: erst neu verbinden, dann senden
+  if (!mqttClient || !mqttClient.connected) {
+    console.warn('[SEND] Nicht verbunden - reconnect');
+    showToast('VERBINDE NEU...', 'warn');
+    pendingClick = newOn;
+    reconnect();
+    return;
+  }
 
   try {
-    // Genau wie der funktionierende Console-Befehl:
-    // mqttClient.publish('shellyXXX/command/switch:0', 'toggle')
-    // → keine Options, kein Callback
     mqttClient.publish(topic, command);
     console.log('[SENT] ohne Fehler');
+    // Nach 1 Sekunde Status nachfragen für Sync
+    setTimeout(requestStatus, 1000);
   } catch (e) {
     showToast('FEHLER: ' + e.message, 'warn');
     console.error(e);
   }
+}
+
+// Verbindung neu aufbauen
+function reconnect() {
+  console.log('[RECONNECT] Trenne alte Verbindung');
+  if (mqttClient) {
+    try { mqttClient.end(true); } catch(e) {}
+    mqttClient = null;
+  }
+  setTimeout(connect, 500);
 }
 
 // Status-Anfrage
@@ -410,7 +426,8 @@ function connect() {
 
   setConnState('connecting', 'VERBINDE MIT ' + host + ' ...');
   var url = 'wss://' + host + ':' + port + '/mqtt';
-  var clientId = 'wohnung-' + Math.floor(Math.random() * 99999);
+  // Eindeutige Client-ID mit Timestamp, damit nicht mit Project1.html kollidiert
+  var clientId = 'wohnung-' + Date.now() + '-' + Math.floor(Math.random() * 99999);
 
   mqttClient = mqtt.connect(url, {
     username: user,
@@ -430,11 +447,11 @@ function connect() {
     requestStatus();
 
     // Wenn ein Klick gepuffert war: jetzt ausführen
-    if (pendingClick) {
-      pendingClick = false;
+    if (pendingClick !== null) {
+      var newOn = pendingClick;
+      pendingClick = null;
       var lamp = document.getElementById('lampWohnzimmer');
       lamp.classList.remove('busy');
-      var newOn = !lamp.classList.contains('on');
       setTimeout(function() {
         sendSwitchSet(newOn);
         showToast('SCHALTBEFEHL GESENDET', 'ok');
