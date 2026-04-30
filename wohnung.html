@@ -28,7 +28,6 @@
     }
     #wrapper { position:relative; z-index:1; max-width:900px; margin:0 auto; padding:20px 24px; }
 
-    /* Header */
     .header {
       display:flex; align-items:center; justify-content:space-between;
       padding-bottom:20px; margin-bottom:20px;
@@ -48,7 +47,6 @@
     }
     .nav-link:hover { background:var(--card); border-color:var(--accent2); color:var(--accent); }
 
-    /* Status Badge */
     .conn-badge {
       display:flex; align-items:center; gap:10px;
       background:var(--surface); border:1px solid var(--border); border-radius:8px;
@@ -64,13 +62,11 @@
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
     #connLabel { font-family:var(--font-mono); font-size:12px; color:var(--muted); }
 
-    /* Section */
     .section-title {
       font-size:11px; font-weight:600; letter-spacing:3px;
       text-transform:uppercase; color:var(--muted); margin-bottom:12px;
     }
 
-    /* Floor */
     .floor-panel {
       background:var(--surface); border:1px solid var(--border); border-radius:12px;
       padding:14px; margin-bottom:20px;
@@ -93,6 +89,7 @@
       animation:glow 2s ease-in-out infinite;
     }
     .lamp.offline .lamp-dot { border-color:var(--danger); border-style:dashed; }
+    .lamp.busy .lamp-dot { border-color:var(--warn); animation:pulse 0.8s infinite; }
     .lamp.demo .lamp-dot { border-color:var(--accent2); border-style:dotted; }
     .lamp.demo.on .lamp-dot {
       background:var(--accent2); border-color:#fff; border-style:solid;
@@ -117,7 +114,6 @@
       font-family:var(--font-mono); font-size:9px; color:var(--muted); margin-top:1px;
     }
 
-    /* Legende */
     .legend {
       display:flex; justify-content:center; gap:18px; margin-top:14px;
       flex-wrap:wrap; font-family:var(--font-mono); font-size:11px; color:var(--muted);
@@ -129,11 +125,22 @@
     .leg-offline { background:var(--card); border:2px dashed var(--danger); }
     .leg-demo    { background:var(--card); border:2px dotted var(--accent2); }
 
-    /* Info box */
     .info {
       background:var(--surface); border:1px solid var(--border); border-radius:12px;
       padding:14px 18px; font-size:13px; color:var(--muted); line-height:1.5;
     }
+
+    /* Toast-Benachrichtigung */
+    .toast {
+      position:fixed; top:20px; left:50%; transform:translateX(-50%);
+      background:var(--surface); border:1px solid var(--danger);
+      color:var(--danger); padding:12px 24px; border-radius:8px;
+      font-family:var(--font-ui); font-weight:600; letter-spacing:0.5px;
+      z-index:1000; opacity:0; transition:opacity 0.3s; pointer-events:none;
+    }
+    .toast.show { opacity:1; }
+    .toast.warn { border-color:var(--warn); color:var(--warn); }
+    .toast.ok   { border-color:var(--accent); color:var(--accent); }
 
     @media (max-width:600px) {
       #wrapper { padding:14px 14px; }
@@ -145,32 +152,28 @@
 <body>
 <div id="wrapper">
 
-  <!-- Header -->
   <div class="header">
     <div class="header-logo">
       <img src="logorw.png" alt="SmartHomeRw">
       <div>
         <div class="header-title">SMART<span>HOME</span>RW</div>
         <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">GRUNDRISS</div>
-        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.0</div>
+        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.1</div>
       </div>
     </div>
     <a href="Project1.html" class="nav-link">⚡ Steuerung →</a>
   </div>
 
-  <!-- Status -->
   <div class="conn-badge">
     <div class="conn-dot" id="connDot"></div>
     <span id="connLabel">VERBINDE...</span>
   </div>
 
-  <!-- Floor Plan -->
   <div class="section-title">WOHNUNG</div>
   <div class="floor-panel">
     <div class="floor-wrap">
       <img src="grundriss.png" alt="Grundriss" class="floor-img">
 
-      <!-- Wohnzimmer-Lampe (echter Shelly) -->
       <div class="lamp" id="lampWohnzimmer" style="left:51%;top:33%" onclick="onWohnzimmerClick()">
         <div class="lamp-dot"></div>
         <div class="lamp-label">
@@ -179,7 +182,6 @@
         </div>
       </div>
 
-      <!-- Schlafzimmer (Demo) -->
       <div class="lamp demo" style="left:25%;top:64%" onclick="toggleDemo(this)">
         <div class="lamp-dot"></div>
         <div class="lamp-label">
@@ -188,7 +190,6 @@
         </div>
       </div>
 
-      <!-- Bad (Demo) -->
       <div class="lamp demo" style="left:67%;top:75%" onclick="toggleDemo(this)">
         <div class="lamp-dot"></div>
         <div class="lamp-label">
@@ -197,7 +198,6 @@
         </div>
       </div>
 
-      <!-- Küche (Demo) -->
       <div class="lamp demo" style="left:73%;top:32%" onclick="toggleDemo(this)">
         <div class="lamp-dot"></div>
         <div class="lamp-label">
@@ -207,7 +207,6 @@
       </div>
     </div>
 
-    <!-- Legende -->
     <div class="legend">
       <div class="leg-item"><div class="leg-dot leg-on"></div>EIN</div>
       <div class="leg-item"><div class="leg-dot leg-off"></div>AUS</div>
@@ -216,7 +215,6 @@
     </div>
   </div>
 
-  <!-- Info -->
   <div class="info">
     <span style="color:var(--text);font-weight:600">Bedienung:</span>
     Klick auf Lampenpunkt schaltet das Gerät.<br>
@@ -224,18 +222,30 @@
     <span style="color:var(--muted);font-size:11px">Verbindungsdaten werden aus der Steuerungs-App geladen (localStorage).</span>
   </div>
 
+  <div class="toast" id="toast"></div>
+
 </div>
 
 <script>
 // ────────────────────────────────────────────────────────────
-// SmartHomeRw Wohnung-Seite
-// Eigener MQTT-Client, nutzt HiveMQ-Daten aus localStorage
+// SmartHomeRw Wohnung-Seite v1.2.1
+// Verbessert: stabileres Schalten mit Connection-Check
 // ────────────────────────────────────────────────────────────
 
 var mqttClient = null;
 var deviceID   = null;
 var deviceName = 'Wohnzimmer';
 var rpcMsgId   = 0;
+var pendingClick = null;
+var clickGuard   = false;
+
+// Toast-Benachrichtigung anzeigen
+function showToast(msg, kind) {
+  var t = document.getElementById('toast');
+  t.className = 'toast show' + (kind ? ' ' + kind : '');
+  t.innerText = msg;
+  setTimeout(function() { t.className = 'toast'; }, 2500);
+}
 
 // Status-Anzeige aktualisieren
 function setConnState(state, label) {
@@ -249,7 +259,7 @@ function setConnState(state, label) {
 function updateLamp(state, on, watt) {
   var lamp = document.getElementById('lampWohnzimmer');
   var info = document.getElementById('lampInfo');
-  lamp.classList.remove('on', 'offline');
+  lamp.classList.remove('on', 'offline', 'busy');
 
   if (state === 'offline') {
     lamp.classList.add('offline');
@@ -265,20 +275,44 @@ function updateLamp(state, on, watt) {
     info.innerText = (watt > 0 ? watt.toFixed(1) + ' W' : '0 W');
 }
 
-// Demo-Lampen einfach toggeln
 function toggleDemo(el) { el.classList.toggle('on'); }
 
 // Klick auf Wohnzimmer → Schalt-Befehl senden
 function onWohnzimmerClick() {
-  if (!mqttClient || !deviceID) {
-    alert('Nicht verbunden oder kein Gerät gespeichert.\nBitte zuerst in der Steuerungs-App verbinden und Gerät hinzufügen.');
+  // Click-Guard: doppelklicks verhindern
+  if (clickGuard) return;
+  clickGuard = true;
+  setTimeout(function() { clickGuard = false; }, 800);
+
+  // Verbindung prüfen
+  if (!mqttClient) {
+    showToast('NICHT VERBUNDEN', 'warn');
     return;
   }
+  if (!deviceID) {
+    showToast('KEIN GERÄT GESPEICHERT', 'warn');
+    return;
+  }
+
+  // MQTT.js: connected ist nur true wenn echt verbunden
+  // reconnecting/disconnecting → Befehl puffern und beim nächsten connect senden
+  if (!mqttClient.connected) {
+    showToast('VERBINDUNG WIRD WIEDERHERGESTELLT...', 'warn');
+    var lamp = document.getElementById('lampWohnzimmer');
+    lamp.classList.add('busy');
+    pendingClick = true;
+    return;
+  }
+
   // Aktueller Toggle-Zustand der Lampe
   var lamp = document.getElementById('lampWohnzimmer');
   var newOn = !lamp.classList.contains('on');
 
-  // RPC: Switch.Set
+  sendSwitchSet(newOn);
+}
+
+// Switch.Set per RPC senden
+function sendSwitchSet(newOn) {
   rpcMsgId++;
   var replyTopic = deviceID + '/rpc/reply';
   var payload = JSON.stringify({
@@ -287,12 +321,22 @@ function onWohnzimmerClick() {
     method: 'Switch.Set',
     params: { id: 0, on: newOn }
   });
-  mqttClient.publish(deviceID + '/rpc', payload);
+  try {
+    mqttClient.publish(deviceID + '/rpc', payload, { qos: 0 }, function(err) {
+      if (err) {
+        showToast('SENDEN FEHLGESCHLAGEN', 'warn');
+        console.error('Publish error:', err);
+      }
+    });
+  } catch (e) {
+    showToast('FEHLER: ' + e.message, 'warn');
+    console.error(e);
+  }
 }
 
-// Status-Anfrage an Shelly
+// Status-Anfrage
 function requestStatus() {
-  if (!mqttClient || !deviceID) return;
+  if (!mqttClient || !mqttClient.connected || !deviceID) return;
   rpcMsgId++;
   var replyTopic = deviceID + '/rpc/reply';
   var payload = JSON.stringify({
@@ -301,14 +345,17 @@ function requestStatus() {
     method: 'Switch.GetStatus',
     params: { id: 0 }
   });
-  mqttClient.publish(deviceID + '/rpc', payload);
+  try {
+    mqttClient.publish(deviceID + '/rpc', payload, { qos: 0 });
+  } catch(e) {
+    console.error('Status request failed:', e);
+  }
 }
 
 // MQTT-Nachricht verarbeiten
 function onMqttMessage(topic, message) {
   var payload = message.toString();
 
-  // Online-Status
   if (topic === deviceID + '/online') {
     if (payload.toLowerCase().trim() === 'true') {
       requestStatus();
@@ -318,7 +365,6 @@ function onMqttMessage(topic, message) {
     return;
   }
 
-  // Events / RPC-Antworten
   if (topic === deviceID + '/events/rpc' || topic === deviceID + '/rpc/reply') {
     var parsed;
     try { parsed = JSON.parse(payload); } catch(e) { return; }
@@ -337,7 +383,6 @@ function onMqttMessage(topic, message) {
 
 // MQTT verbinden
 function connect() {
-  // Daten aus localStorage holen
   var host = localStorage.getItem('shelly_host');
   var port = localStorage.getItem('shelly_port') || '8884';
   var user = localStorage.getItem('shelly_user');
@@ -350,7 +395,6 @@ function connect() {
     return;
   }
 
-  // Erstes Gerät aus Liste verwenden
   if (devs) {
     try {
       var arr = JSON.parse(devs);
@@ -367,10 +411,8 @@ function connect() {
     return;
   }
 
-  // Lampenname aus localStorage übernehmen
   document.querySelector('#lampWohnzimmer .lamp-name').innerText = deviceName;
 
-  // MQTT-Verbindung
   setConnState('connecting', 'VERBINDE MIT ' + host + ' ...');
   var url = 'wss://' + host + ':' + port + '/mqtt';
   var clientId = 'wohnung-' + Math.floor(Math.random() * 99999);
@@ -380,34 +422,55 @@ function connect() {
     password: pass,
     clientId: clientId,
     clean:    true,
-    reconnectPeriod: 5000,
-    connectTimeout:  10000
+    reconnectPeriod: 3000,
+    connectTimeout:  10000,
+    keepalive:       30
   });
 
   mqttClient.on('connect', function() {
     setConnState('connected', 'VERBUNDEN · ' + deviceID);
-    // Topics abonnieren
     mqttClient.subscribe(deviceID + '/online',     { qos: 0 });
     mqttClient.subscribe(deviceID + '/events/rpc', { qos: 0 });
     mqttClient.subscribe(deviceID + '/rpc/reply',  { qos: 0 });
     requestStatus();
+
+    // Wenn ein Klick gepuffert war: jetzt ausführen
+    if (pendingClick) {
+      pendingClick = false;
+      var lamp = document.getElementById('lampWohnzimmer');
+      lamp.classList.remove('busy');
+      var newOn = !lamp.classList.contains('on');
+      setTimeout(function() {
+        sendSwitchSet(newOn);
+        showToast('SCHALTBEFEHL GESENDET', 'ok');
+      }, 300);
+    }
+  });
+
+  mqttClient.on('reconnect', function() {
+    setConnState('connecting', 'VERBINDE NEU...');
   });
 
   mqttClient.on('error', function(err) {
     setConnState('disconnected', 'FEHLER: ' + (err && err.message ? err.message : 'unbekannt'));
   });
 
-  mqttClient.on('close',   function() { setConnState('disconnected', 'GETRENNT'); });
-  mqttClient.on('offline', function() { setConnState('disconnected', 'OFFLINE'); });
+  mqttClient.on('close',   function() {
+    setConnState('connecting', 'VERBINDUNG GETRENNT - REKONNEKT...');
+  });
+
+  mqttClient.on('offline', function() {
+    setConnState('connecting', 'OFFLINE - REKONNEKT...');
+  });
+
   mqttClient.on('message', onMqttMessage);
 }
 
-// Alle 30 Sekunden Status nachfragen
+// Alle 30 Sekunden Status nachfragen (nur wenn verbunden)
 setInterval(function() {
   if (mqttClient && mqttClient.connected) requestStatus();
 }, 30000);
 
-// Sobald Seite geladen ist
 window.addEventListener('load', connect);
 </script>
 
