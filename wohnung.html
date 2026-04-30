@@ -158,7 +158,7 @@
       <div>
         <div class="header-title">SMART<span>HOME</span>RW</div>
         <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">GRUNDRISS</div>
-        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.2</div>
+        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.3</div>
       </div>
     </div>
     <a href="Project1.html" class="nav-link">⚡ Steuerung →</a>
@@ -228,7 +228,7 @@
 
 <script>
 // ────────────────────────────────────────────────────────────
-// SmartHomeRw Wohnung-Seite v1.2.2
+// SmartHomeRw Wohnung-Seite v1.2.3
 // Verbessert: stabileres Schalten mit Connection-Check
 // ────────────────────────────────────────────────────────────
 
@@ -308,21 +308,21 @@ function onWohnzimmerClick() {
   sendSwitchSet(newOn);
 }
 
-// Switch.Set per RPC senden
+// Switch.Set per Command-Topic senden (einfacher als RPC)
 function sendSwitchSet(newOn) {
-  rpcMsgId++;
-  var replyTopic = deviceID + '/rpc/reply';
-  var payload = JSON.stringify({
-    id:     rpcMsgId,
-    src:    replyTopic,
-    method: 'Switch.Set',
-    params: { id: 0, on: newOn }
-  });
+  // Shelly Gen3 unterstützt:
+  //   <deviceID>/command/switch:0 mit "on" / "off" / "toggle"
+  // Das ist einfacher und zuverlässiger als RPC
+  var topic   = deviceID + '/command/switch:0';
+  var command = newOn ? 'on' : 'off';
+
   try {
-    mqttClient.publish(deviceID + '/rpc', payload, { qos: 0 }, function(err) {
+    mqttClient.publish(topic, command, { qos: 0 }, function(err) {
       if (err) {
         showToast('SENDEN FEHLGESCHLAGEN', 'warn');
         console.error('Publish error:', err);
+      } else {
+        console.log('[OK] Sent: ' + topic + ' = ' + command);
       }
     });
   } catch (e) {
