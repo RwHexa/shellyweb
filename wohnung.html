@@ -158,7 +158,7 @@
       <div>
         <div class="header-title">SMART<span>HOME</span>RW</div>
         <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">GRUNDRISS</div>
-        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.5</div>
+        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.6</div>
       </div>
     </div>
     <a href="Project1.html" class="nav-link">⚡ Steuerung →</a>
@@ -228,7 +228,7 @@
 
 <script>
 // ────────────────────────────────────────────────────────────
-// SmartHomeRw Wohnung-Seite v1.2.5
+// SmartHomeRw Wohnung-Seite v1.2.6
 // Verbessert: stabileres Schalten mit Connection-Check
 // ────────────────────────────────────────────────────────────
 
@@ -436,7 +436,8 @@ function connect() {
     clean:    true,
     reconnectPeriod: 3000,
     connectTimeout:  10000,
-    keepalive:       30
+    keepalive:       20,    // alle 20 Sekunden Keepalive-Ping
+    resubscribe:     true   // bei Reconnect automatisch wieder abonnieren
   });
 
   mqttClient.on('connect', function() {
@@ -478,10 +479,40 @@ function connect() {
   mqttClient.on('message', onMqttMessage);
 }
 
-// Alle 30 Sekunden Status nachfragen
+// ── Keepalive: alle 25 Sekunden eine kleine Nachricht senden ──
+// Verhindert dass HiveMQ Cloud die Verbindung wegen Idle abbricht
 setInterval(function() {
-  if (mqttClient) requestStatus();
-}, 30000);
+  if (!mqttClient) return;
+  if (!mqttClient.connected) {
+    console.log('[KEEPALIVE] Nicht verbunden - reconnect');
+    reconnect();
+    return;
+  }
+  try {
+    // Status-Anfrage zählt als Aktivität → hält Verbindung wach
+    rpcMsgId++;
+    var payload = JSON.stringify({
+      id:     rpcMsgId,
+      src:    deviceID + '/rpc/reply',
+      method: 'Switch.GetStatus',
+      params: { id: 0 }
+    });
+    mqttClient.publish(deviceID + '/rpc', payload);
+    console.log('[KEEPALIVE] OK');
+  } catch(e) {
+    console.warn('[KEEPALIVE] Fehler:', e);
+    reconnect();
+  }
+}, 25000);
+
+// ── Health Check alle 5 Sekunden ──
+// Prüft ob Connection noch lebt - schnellere Erkennung von toten Verbindungen
+setInterval(function() {
+  if (mqttClient && !mqttClient.connected && !mqttClient.reconnecting) {
+    console.log('[HEALTH] Verbindung tot - reconnect');
+    reconnect();
+  }
+}, 5000);
 
 window.addEventListener('load', connect);
 </script>
