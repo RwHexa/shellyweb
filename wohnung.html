@@ -158,7 +158,7 @@
       <div>
         <div class="header-title">SMART<span>HOME</span>RW</div>
         <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">GRUNDRISS</div>
-        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.1</div>
+        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.2</div>
       </div>
     </div>
     <a href="Project1.html" class="nav-link">⚡ Steuerung →</a>
@@ -228,7 +228,7 @@
 
 <script>
 // ────────────────────────────────────────────────────────────
-// SmartHomeRw Wohnung-Seite v1.2.1
+// SmartHomeRw Wohnung-Seite v1.2.2
 // Verbessert: stabileres Schalten mit Connection-Check
 // ────────────────────────────────────────────────────────────
 
@@ -284,7 +284,12 @@ function onWohnzimmerClick() {
   clickGuard = true;
   setTimeout(function() { clickGuard = false; }, 800);
 
-  // Verbindung prüfen
+  // DEBUG: Status anzeigen
+  var debugInfo = 'mqtt=' + (mqttClient ? 'ja' : 'NEIN') +
+                  ' · conn=' + (mqttClient && mqttClient.connected ? 'ja' : 'NEIN') +
+                  ' · dev=' + (deviceID || 'NEIN');
+  console.log('[CLICK]', debugInfo);
+
   if (!mqttClient) {
     showToast('NICHT VERBUNDEN', 'warn');
     return;
@@ -294,20 +299,12 @@ function onWohnzimmerClick() {
     return;
   }
 
-  // MQTT.js: connected ist nur true wenn echt verbunden
-  // reconnecting/disconnecting → Befehl puffern und beim nächsten connect senden
-  if (!mqttClient.connected) {
-    showToast('VERBINDUNG WIRD WIEDERHERGESTELLT...', 'warn');
-    var lamp = document.getElementById('lampWohnzimmer');
-    lamp.classList.add('busy');
-    pendingClick = true;
-    return;
-  }
-
-  // Aktueller Toggle-Zustand der Lampe
+  // SENDEN versuchen — nicht mehr 'connected' Property nutzen,
+  // sondern direkt publishen und auf Errors hören
   var lamp = document.getElementById('lampWohnzimmer');
   var newOn = !lamp.classList.contains('on');
 
+  showToast('SENDE: ' + (newOn ? 'EIN' : 'AUS'), 'ok');
   sendSwitchSet(newOn);
 }
 
@@ -336,7 +333,7 @@ function sendSwitchSet(newOn) {
 
 // Status-Anfrage
 function requestStatus() {
-  if (!mqttClient || !mqttClient.connected || !deviceID) return;
+  if (!mqttClient || !deviceID) return;
   rpcMsgId++;
   var replyTopic = deviceID + '/rpc/reply';
   var payload = JSON.stringify({
@@ -466,9 +463,9 @@ function connect() {
   mqttClient.on('message', onMqttMessage);
 }
 
-// Alle 30 Sekunden Status nachfragen (nur wenn verbunden)
+// Alle 30 Sekunden Status nachfragen
 setInterval(function() {
-  if (mqttClient && mqttClient.connected) requestStatus();
+  if (mqttClient) requestStatus();
 }, 30000);
 
 window.addEventListener('load', connect);
