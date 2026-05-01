@@ -14,134 +14,58 @@
       --font-ui:'Rajdhani',sans-serif; --font-mono:'JetBrains Mono',monospace;
     }
     * { box-sizing:border-box; margin:0; padding:0; }
-    body {
-      background:var(--bg); color:var(--text);
-      font-family:var(--font-ui); min-height:100vh; padding:0 0 40px 0;
-    }
+    body { background:var(--bg); color:var(--text); font-family:var(--font-ui); min-height:100vh; padding:0 0 40px 0; }
     body::before {
       content:''; position:fixed; inset:0;
-      background-image:
-        linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
-      background-size:40px 40px;
-      pointer-events:none; z-index:0;
+      background-image:linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+      background-size:40px 40px; pointer-events:none; z-index:0;
     }
     #wrapper { position:relative; z-index:1; max-width:900px; margin:0 auto; padding:20px 24px; }
-
-    .header {
-      display:flex; align-items:center; justify-content:space-between;
-      padding-bottom:20px; margin-bottom:20px;
-      border-bottom:1px solid var(--border);
-      flex-wrap:wrap; gap:14px;
-    }
+    .header { display:flex; align-items:center; justify-content:space-between; padding-bottom:20px; margin-bottom:20px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:14px; }
     .header-logo { display:flex; align-items:center; gap:14px; }
     .header-logo img { width:42px; height:42px; border-radius:8px; }
     .header-title { font-size:22px; font-weight:700; letter-spacing:2px; text-transform:uppercase; }
     .header-title span { color:var(--accent); }
-    .nav-link {
-      background:var(--surface); color:var(--text); text-decoration:none;
-      border:1px solid var(--border); border-radius:8px;
-      padding:10px 18px; font-family:var(--font-ui);
-      font-size:13px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase;
-      transition:all 0.2s;
-    }
+    .nav-link { background:var(--surface); color:var(--text); text-decoration:none; border:1px solid var(--border); border-radius:8px; padding:10px 18px; font-family:var(--font-ui); font-size:13px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; transition:all 0.2s; }
     .nav-link:hover { background:var(--card); border-color:var(--accent2); color:var(--accent); }
-
-    .conn-badge {
-      display:flex; align-items:center; gap:10px;
-      background:var(--surface); border:1px solid var(--border); border-radius:8px;
-      padding:10px 14px; margin-bottom:20px;
-    }
-    .conn-dot {
-      width:9px; height:9px; border-radius:50%;
-      background:var(--muted); flex-shrink:0; transition:background 0.3s;
-    }
-    .conn-dot.connected    { background:var(--accent); box-shadow:0 0 8px var(--accent); }
-    .conn-dot.connecting   { background:var(--warn); animation:pulse 1s infinite; }
+    .conn-badge { display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:20px; }
+    .conn-dot { width:9px; height:9px; border-radius:50%; background:var(--muted); flex-shrink:0; transition:background 0.3s; }
+    .conn-dot.connected { background:var(--accent); box-shadow:0 0 8px var(--accent); }
+    .conn-dot.connecting { background:var(--warn); animation:pulse 1s infinite; }
     .conn-dot.disconnected { background:var(--danger); }
+    .conn-dot.busy { background:var(--accent2); animation:pulse 0.6s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
     #connLabel { font-family:var(--font-mono); font-size:12px; color:var(--muted); }
-
-    .section-title {
-      font-size:11px; font-weight:600; letter-spacing:3px;
-      text-transform:uppercase; color:var(--muted); margin-bottom:12px;
-    }
-
-    .floor-panel {
-      background:var(--surface); border:1px solid var(--border); border-radius:12px;
-      padding:14px; margin-bottom:20px;
-    }
-    .floor-wrap {
-      position:relative; width:100%; max-width:700px; margin:0 auto;
-      background:#1a1d2a; border-radius:8px; overflow:hidden;
-    }
+    .section-title { font-size:11px; font-weight:600; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+    .floor-panel { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:20px; }
+    .floor-wrap { position:relative; width:100%; max-width:700px; margin:0 auto; background:#1a1d2a; border-radius:8px; overflow:hidden; }
     .floor-img { width:100%; height:auto; display:block; }
-
     .lamp { position:absolute; transform:translate(-50%,-50%); cursor:pointer; z-index:5; }
-    .lamp-dot {
-      width:24px; height:24px; border-radius:50%;
-      background:#1e2230; border:3px solid var(--muted);
-      margin:0 auto; transition:all 0.3s;
-    }
-    .lamp.on .lamp-dot {
-      background:var(--accent); border-color:#fff;
-      box-shadow:0 0 16px var(--accent), 0 0 32px var(--accent);
-      animation:glow 2s ease-in-out infinite;
-    }
+    .lamp-dot { width:24px; height:24px; border-radius:50%; background:#1e2230; border:3px solid var(--muted); margin:0 auto; transition:all 0.3s; }
+    .lamp.on .lamp-dot { background:var(--accent); border-color:#fff; box-shadow:0 0 16px var(--accent), 0 0 32px var(--accent); animation:glow 2s ease-in-out infinite; }
     .lamp.offline .lamp-dot { border-color:var(--danger); border-style:dashed; }
-    .lamp.busy .lamp-dot { border-color:var(--warn); animation:pulse 0.8s infinite; }
+    .lamp.busy .lamp-dot { border-color:var(--accent2); animation:pulse 0.6s infinite; }
     .lamp.demo .lamp-dot { border-color:var(--accent2); border-style:dotted; }
-    .lamp.demo.on .lamp-dot {
-      background:var(--accent2); border-color:#fff; border-style:solid;
-      box-shadow:0 0 16px var(--accent2);
-    }
-    @keyframes glow {
-      0%,100% { box-shadow:0 0 12px var(--accent), 0 0 24px var(--accent); }
-      50%     { box-shadow:0 0 20px var(--accent), 0 0 40px var(--accent); }
-    }
-    .lamp-label {
-      background:rgba(13,15,20,0.85);
-      padding:3px 8px; border-radius:4px; text-align:center;
-      margin-top:4px; line-height:1.2; white-space:nowrap;
-    }
-    .lamp-name {
-      font-size:11px; font-weight:700; color:var(--text); letter-spacing:0.5px;
-    }
-    .lamp.on .lamp-name      { color:var(--accent); }
+    .lamp.demo.on .lamp-dot { background:var(--accent2); border-color:#fff; border-style:solid; box-shadow:0 0 16px var(--accent2); }
+    @keyframes glow { 0%,100%{box-shadow:0 0 12px var(--accent), 0 0 24px var(--accent)} 50%{box-shadow:0 0 20px var(--accent), 0 0 40px var(--accent)} }
+    .lamp-label { background:rgba(13,15,20,0.85); padding:3px 8px; border-radius:4px; text-align:center; margin-top:4px; line-height:1.2; white-space:nowrap; }
+    .lamp-name { font-size:11px; font-weight:700; color:var(--text); letter-spacing:0.5px; }
+    .lamp.on .lamp-name { color:var(--accent); }
     .lamp.offline .lamp-name { color:var(--danger); }
-    .lamp.demo .lamp-name    { color:var(--accent2); }
-    .lamp-info {
-      font-family:var(--font-mono); font-size:9px; color:var(--muted); margin-top:1px;
-    }
-
-    .legend {
-      display:flex; justify-content:center; gap:18px; margin-top:14px;
-      flex-wrap:wrap; font-family:var(--font-mono); font-size:11px; color:var(--muted);
-    }
+    .lamp.demo .lamp-name { color:var(--accent2); }
+    .lamp-info { font-family:var(--font-mono); font-size:9px; color:var(--muted); margin-top:1px; }
+    .legend { display:flex; justify-content:center; gap:18px; margin-top:14px; flex-wrap:wrap; font-family:var(--font-mono); font-size:11px; color:var(--muted); }
     .leg-item { display:flex; align-items:center; gap:6px; }
     .leg-dot { width:12px; height:12px; border-radius:50%; }
-    .leg-on      { background:var(--accent); box-shadow:0 0 6px var(--accent); }
-    .leg-off     { background:var(--card); border:2px solid var(--muted); }
+    .leg-on { background:var(--accent); box-shadow:0 0 6px var(--accent); }
+    .leg-off { background:var(--card); border:2px solid var(--muted); }
     .leg-offline { background:var(--card); border:2px dashed var(--danger); }
-    .leg-demo    { background:var(--card); border:2px dotted var(--accent2); }
-
-    .info {
-      background:var(--surface); border:1px solid var(--border); border-radius:12px;
-      padding:14px 18px; font-size:13px; color:var(--muted); line-height:1.5;
-    }
-
-    /* Toast-Benachrichtigung */
-    .toast {
-      position:fixed; top:20px; left:50%; transform:translateX(-50%);
-      background:var(--surface); border:1px solid var(--danger);
-      color:var(--danger); padding:12px 24px; border-radius:8px;
-      font-family:var(--font-ui); font-weight:600; letter-spacing:0.5px;
-      z-index:1000; opacity:0; transition:opacity 0.3s; pointer-events:none;
-    }
+    .leg-demo { background:var(--card); border:2px dotted var(--accent2); }
+    .info { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 18px; font-size:13px; color:var(--muted); line-height:1.5; }
+    .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--surface); border:1px solid var(--danger); color:var(--danger); padding:12px 24px; border-radius:8px; font-family:var(--font-ui); font-weight:600; letter-spacing:0.5px; z-index:1000; opacity:0; transition:opacity 0.3s; pointer-events:none; }
     .toast.show { opacity:1; }
     .toast.warn { border-color:var(--warn); color:var(--warn); }
-    .toast.ok   { border-color:var(--accent); color:var(--accent); }
-
+    .toast.ok { border-color:var(--accent); color:var(--accent); }
     @media (max-width:600px) {
       #wrapper { padding:14px 14px; }
       .header { flex-direction:column; align-items:flex-start; }
@@ -158,7 +82,7 @@
       <div>
         <div class="header-title">SMART<span>HOME</span>RW</div>
         <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">GRUNDRISS</div>
-        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.7</div>
+        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.3.0</div>
       </div>
     </div>
     <a href="Project1.html" class="nav-link">⚡ Steuerung →</a>
@@ -166,7 +90,7 @@
 
   <div class="conn-badge">
     <div class="conn-dot" id="connDot"></div>
-    <span id="connLabel">VERBINDE...</span>
+    <span id="connLabel">BEREIT</span>
   </div>
 
   <div class="section-title">WOHNUNG</div>
@@ -178,7 +102,7 @@
         <div class="lamp-dot"></div>
         <div class="lamp-label">
           <div class="lamp-name">Wohnzimmer</div>
-          <div class="lamp-info" id="lampInfo">– W</div>
+          <div class="lamp-info" id="lampInfo">–</div>
         </div>
       </div>
 
@@ -219,7 +143,7 @@
     <span style="color:var(--text);font-weight:600">Bedienung:</span>
     Klick auf Lampenpunkt schaltet das Gerät.<br>
     <span style="color:var(--accent)">Wohnzimmer</span> = echter Shelly · andere Räume = Demo<br>
-    <span style="color:var(--muted);font-size:11px">Verbindungsdaten werden aus der Steuerungs-App geladen (localStorage).</span>
+    <span style="color:var(--muted);font-size:11px">v1.3.0 · Pro-Click-Verbindung für maximale Zuverlässigkeit</span>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -228,18 +152,16 @@
 
 <script>
 // ────────────────────────────────────────────────────────────
-// SmartHomeRw Wohnung-Seite v1.2.7
-// Verbessert: stabileres Schalten mit Connection-Check
+// SmartHomeRw Wohnung-Seite v1.3.0
+// NEUE STRATEGIE: Pro Klick eine frische MQTT-Verbindung
+// → kein Stale-State, kein Idle-Timeout, garantiert zuverlässig
 // ────────────────────────────────────────────────────────────
 
-var mqttClient = null;
-var deviceID   = null;
-var deviceName = 'Wohnzimmer';
-var rpcMsgId   = 0;
-var pendingClick = null;
-var clickGuard   = false;
+var deviceID    = null;
+var deviceName  = 'Wohnzimmer';
+var clickGuard  = false;
+var lampOn      = false;  // Lokaler Lampen-Status
 
-// Toast-Benachrichtigung anzeigen
 function showToast(msg, kind) {
   var t = document.getElementById('toast');
   t.className = 'toast show' + (kind ? ' ' + kind : '');
@@ -247,7 +169,6 @@ function showToast(msg, kind) {
   setTimeout(function() { t.className = 'toast'; }, 2500);
 }
 
-// Status-Anzeige aktualisieren
 function setConnState(state, label) {
   var dot = document.getElementById('connDot');
   var lbl = document.getElementById('connLabel');
@@ -255,268 +176,213 @@ function setConnState(state, label) {
   lbl.innerText = label;
 }
 
-// Lampen-Anzeige updaten
-function updateLamp(state, on, watt) {
+function updateLampVisual() {
   var lamp = document.getElementById('lampWohnzimmer');
-  var info = document.getElementById('lampInfo');
   lamp.classList.remove('on', 'offline', 'busy');
+  if (lampOn) lamp.classList.add('on');
+}
 
-  if (state === 'offline') {
-    lamp.classList.add('offline');
-    info.innerText = 'OFFLINE';
-    return;
-  }
-  if (state === 'noDevice') {
-    info.innerText = 'KEIN GERÄT';
-    return;
-  }
-  if (on) lamp.classList.add('on');
-  if (watt !== undefined && watt !== null)
-    info.innerText = (watt > 0 ? watt.toFixed(1) + ' W' : '0 W');
+function setLampBusy(busy) {
+  var lamp = document.getElementById('lampWohnzimmer');
+  if (busy) lamp.classList.add('busy');
+  else lamp.classList.remove('busy');
 }
 
 function toggleDemo(el) { el.classList.toggle('on'); }
 
-// Klick auf Wohnzimmer → Schalt-Befehl senden
-function onWohnzimmerClick() {
-  // Click-Guard: doppelklicks verhindern
-  if (clickGuard) return;
-  clickGuard = true;
-  setTimeout(function() { clickGuard = false; }, 800);
-
-  // DEBUG: Status anzeigen
-  var debugInfo = 'mqtt=' + (mqttClient ? 'ja' : 'NEIN') +
-                  ' · conn=' + (mqttClient && mqttClient.connected ? 'ja' : 'NEIN') +
-                  ' · dev=' + (deviceID || 'NEIN');
-  console.log('[CLICK]', debugInfo);
-
-  if (!mqttClient) {
-    showToast('NICHT VERBUNDEN', 'warn');
-    return;
-  }
-  if (!deviceID) {
-    showToast('KEIN GERÄT GESPEICHERT', 'warn');
-    return;
-  }
-
-  // SENDEN versuchen — nicht mehr 'connected' Property nutzen,
-  // sondern direkt publishen und auf Errors hören
-  var lamp = document.getElementById('lampWohnzimmer');
-  var newOn = !lamp.classList.contains('on');
-
-  showToast('SENDE: ' + (newOn ? 'EIN' : 'AUS'), 'ok');
-  sendSwitchSet(newOn);
-}
-
-// Switch.Set per Command-Topic senden
-function sendSwitchSet(newOn) {
-  var topic   = deviceID + '/command/switch:0';
-  var command = newOn ? 'on' : 'off';
-
-  console.log('[SEND] ' + topic + ' = ' + command + ' · connected=' + (mqttClient && mqttClient.connected));
-
-  // Wenn nicht verbunden: erst neu verbinden, dann senden
-  if (!mqttClient || !mqttClient.connected) {
-    console.warn('[SEND] Nicht verbunden - reconnect');
-    showToast('VERBINDE NEU...', 'warn');
-    pendingClick = newOn;
-    reconnect();
-    return;
-  }
-
-  try {
-    mqttClient.publish(topic, command);
-    console.log('[SENT] ohne Fehler');
-    // Nach 1 Sekunde Status nachfragen für Sync
-    setTimeout(requestStatus, 1000);
-  } catch (e) {
-    showToast('FEHLER: ' + e.message, 'warn');
-    console.error(e);
-  }
-}
-
-// Verbindung neu aufbauen
-function reconnect() {
-  console.log('[RECONNECT] Trenne alte Verbindung');
-  if (mqttClient) {
-    try { mqttClient.end(true); } catch(e) {}
-    mqttClient = null;
-  }
-  setTimeout(connect, 500);
-}
-
-// Status-Anfrage
-function requestStatus() {
-  if (!mqttClient || !deviceID) return;
-  rpcMsgId++;
-  var replyTopic = deviceID + '/rpc/reply';
-  var payload = JSON.stringify({
-    id:     rpcMsgId,
-    src:    replyTopic,
-    method: 'Switch.GetStatus',
-    params: { id: 0 }
-  });
-  try {
-    mqttClient.publish(deviceID + '/rpc', payload, { qos: 0 });
-  } catch(e) {
-    console.error('Status request failed:', e);
-  }
-}
-
-// MQTT-Nachricht verarbeiten
-function onMqttMessage(topic, message) {
-  var payload = message.toString();
-
-  if (topic === deviceID + '/online') {
-    if (payload.toLowerCase().trim() === 'true') {
-      requestStatus();
-    } else {
-      updateLamp('offline');
-    }
-    return;
-  }
-
-  if (topic === deviceID + '/events/rpc' || topic === deviceID + '/rpc/reply') {
-    var parsed;
-    try { parsed = JSON.parse(payload); } catch(e) { return; }
-
-    var sw = null;
-    if (parsed.method === 'NotifyStatus' && parsed.params) {
-      sw = parsed.params['switch:0'];
-    } else if (parsed.result) {
-      sw = parsed.result;
-    }
-    if (sw) {
-      updateLamp('online', sw.output, sw.apower);
-    }
-  }
-}
-
-// MQTT verbinden
-function connect() {
-  var host = localStorage.getItem('shelly_host');
-  var port = localStorage.getItem('shelly_port') || '8884';
-  var user = localStorage.getItem('shelly_user');
-  var pass = localStorage.getItem('shelly_pass');
+// Lade Zugangsdaten aus localStorage
+function loadCredentials() {
+  var creds = {
+    host: localStorage.getItem('shelly_host'),
+    port: localStorage.getItem('shelly_port') || '8884',
+    user: localStorage.getItem('shelly_user'),
+    pass: localStorage.getItem('shelly_pass')
+  };
   var devs = localStorage.getItem('shelly_devices');
-
-  if (!host || !user) {
-    setConnState('disconnected', 'KEINE ZUGANGSDATEN');
-    updateLamp('noDevice');
-    return;
-  }
-
   if (devs) {
     try {
       var arr = JSON.parse(devs);
       if (arr.length > 0) {
-        deviceID = arr[0].id;
-        deviceName = arr[0].name;
+        creds.deviceID = arr[0].id;
+        creds.deviceName = arr[0].name;
       }
     } catch(e) {}
   }
-
-  if (!deviceID) {
-    setConnState('disconnected', 'KEIN GERÄT GESPEICHERT');
-    updateLamp('noDevice');
-    return;
-  }
-
-  document.querySelector('#lampWohnzimmer .lamp-name').innerText = deviceName;
-
-  setConnState('connecting', 'VERBINDE MIT ' + host + ' ...');
-  var url = 'wss://' + host + ':' + port + '/mqtt';
-  // Eindeutige Client-ID mit Timestamp, damit nicht mit Project1.html kollidiert
-  var clientId = 'wohnung-' + Date.now() + '-' + Math.floor(Math.random() * 99999);
-
-  mqttClient = mqtt.connect(url, {
-    username: user,
-    password: pass,
-    clientId: clientId,
-    clean:    true,
-    reconnectPeriod: 3000,
-    connectTimeout:  10000,
-    keepalive:       20,
-    resubscribe:     true,
-    queueQoSZero:    false   // ← KRITISCH: QoS-0 Nachrichten NICHT puffern,
-                              //   sondern sofort senden oder verwerfen
-  });
-
-  mqttClient.on('connect', function() {
-    setConnState('connected', 'VERBUNDEN · ' + deviceID);
-    mqttClient.subscribe(deviceID + '/online',     { qos: 0 });
-    mqttClient.subscribe(deviceID + '/events/rpc', { qos: 0 });
-    mqttClient.subscribe(deviceID + '/rpc/reply',  { qos: 0 });
-    requestStatus();
-
-    // Wenn ein Klick gepuffert war: jetzt ausführen
-    if (pendingClick !== null) {
-      var newOn = pendingClick;
-      pendingClick = null;
-      var lamp = document.getElementById('lampWohnzimmer');
-      lamp.classList.remove('busy');
-      setTimeout(function() {
-        sendSwitchSet(newOn);
-        showToast('SCHALTBEFEHL GESENDET', 'ok');
-      }, 300);
-    }
-  });
-
-  mqttClient.on('reconnect', function() {
-    setConnState('connecting', 'VERBINDE NEU...');
-  });
-
-  mqttClient.on('error', function(err) {
-    setConnState('disconnected', 'FEHLER: ' + (err && err.message ? err.message : 'unbekannt'));
-  });
-
-  mqttClient.on('close',   function() {
-    setConnState('connecting', 'VERBINDUNG GETRENNT - REKONNEKT...');
-  });
-
-  mqttClient.on('offline', function() {
-    setConnState('connecting', 'OFFLINE - REKONNEKT...');
-  });
-
-  mqttClient.on('message', onMqttMessage);
+  return creds;
 }
 
-// ── Keepalive: alle 25 Sekunden eine kleine Nachricht senden ──
-// Verhindert dass HiveMQ Cloud die Verbindung wegen Idle abbricht
-setInterval(function() {
-  if (!mqttClient) return;
-  if (!mqttClient.connected) {
-    console.log('[KEEPALIVE] Nicht verbunden - reconnect');
-    reconnect();
+// ── EINMAL-VERBINDUNG: connect, send, disconnect ──
+function performMqttAction(creds, action, callback) {
+  var url = 'wss://' + creds.host + ':' + creds.port + '/mqtt';
+  var clientId = 'wohnung-' + Date.now() + '-' + Math.floor(Math.random() * 99999);
+  var done = false;
+
+  console.log('[MQTT] Connect ' + clientId);
+
+  var client = mqtt.connect(url, {
+    username: creds.user,
+    password: creds.pass,
+    clientId: clientId,
+    clean:    true,
+    reconnectPeriod: 0,    // kein Auto-Reconnect bei Einmal-Aktion
+    connectTimeout:  8000,
+    keepalive:       10
+  });
+
+  // Timeout
+  var timeoutHandle = setTimeout(function() {
+    if (done) return;
+    done = true;
+    console.error('[MQTT] Timeout');
+    try { client.end(true); } catch(e) {}
+    callback('timeout');
+  }, 8000);
+
+  client.on('connect', function() {
+    console.log('[MQTT] Connected, executing action');
+    action(client, function(result) {
+      if (done) return;
+      done = true;
+      clearTimeout(timeoutHandle);
+      // Verbindung sauber schließen
+      setTimeout(function() {
+        try { client.end(false); } catch(e) {}
+        console.log('[MQTT] Disconnected');
+      }, 500);
+      callback(null, result);
+    });
+  });
+
+  client.on('error', function(err) {
+    if (done) return;
+    done = true;
+    clearTimeout(timeoutHandle);
+    console.error('[MQTT] Error:', err);
+    try { client.end(true); } catch(e) {}
+    callback(err.message || 'error');
+  });
+}
+
+// Klick auf Wohnzimmer → frische Verbindung, Schalt-Befehl, trennen
+function onWohnzimmerClick() {
+  if (clickGuard) return;
+  clickGuard = true;
+  setTimeout(function() { clickGuard = false; }, 1500);
+
+  var creds = loadCredentials();
+  if (!creds.host || !creds.user) {
+    showToast('KEINE ZUGANGSDATEN', 'warn');
     return;
   }
-  try {
-    // Status-Anfrage zählt als Aktivität → hält Verbindung wach
-    rpcMsgId++;
+  if (!creds.deviceID) {
+    showToast('KEIN GERÄT', 'warn');
+    return;
+  }
+
+  deviceID = creds.deviceID;
+  var newOn = !lampOn;  // Neuer Zustand
+
+  setConnState('busy', 'SCHALTE...');
+  setLampBusy(true);
+
+  performMqttAction(creds, function(client, done) {
+    var topic = creds.deviceID + '/command/switch:0';
+    var command = newOn ? 'on' : 'off';
+    console.log('[ACTION] publish ' + topic + ' = ' + command);
+    client.publish(topic, command, function(err) {
+      // Kurz warten damit Shelly die Nachricht verarbeitet
+      setTimeout(function() { done(err ? 'publish failed' : 'ok'); }, 300);
+    });
+  }, function(err, result) {
+    setLampBusy(false);
+    if (err) {
+      setConnState('disconnected', 'FEHLER: ' + err);
+      showToast('FEHLER: ' + err, 'warn');
+    } else {
+      lampOn = newOn;
+      updateLampVisual();
+      setConnState('connected', newOn ? 'EINGESCHALTET' : 'AUSGESCHALTET');
+      document.getElementById('lampInfo').innerText = newOn ? 'EIN' : 'AUS';
+      showToast(newOn ? '💡 EIN' : '○ AUS', 'ok');
+      // Nach 3 Sekunden Status zurück zu "BEREIT"
+      setTimeout(function() {
+        setConnState('connected', 'BEREIT');
+      }, 3000);
+    }
+  });
+}
+
+// Beim Laden: einmal Status holen
+function loadInitialStatus() {
+  var creds = loadCredentials();
+  if (!creds.host || !creds.user) {
+    setConnState('disconnected', 'KEINE ZUGANGSDATEN');
+    document.getElementById('lampInfo').innerText = 'KEINE DATEN';
+    return;
+  }
+  if (!creds.deviceID) {
+    setConnState('disconnected', 'KEIN GERÄT');
+    document.getElementById('lampInfo').innerText = 'KEIN GERÄT';
+    return;
+  }
+
+  deviceID = creds.deviceID;
+  document.querySelector('#lampWohnzimmer .lamp-name').innerText = creds.deviceName;
+
+  setConnState('connecting', 'STATUS WIRD GELADEN...');
+
+  performMqttAction(creds, function(client, done) {
+    var statusReceived = false;
+    // Topics abonnieren um aktuellen Status zu bekommen
+    client.on('message', function(topic, message) {
+      if (statusReceived) return;
+      var payload = message.toString();
+      try {
+        var parsed = JSON.parse(payload);
+        var sw = null;
+        if (parsed.method === 'NotifyStatus' && parsed.params) {
+          sw = parsed.params['switch:0'];
+        } else if (parsed.result) {
+          sw = parsed.result;
+        }
+        if (sw && sw.output !== undefined) {
+          statusReceived = true;
+          done({ on: sw.output, watt: sw.apower });
+        }
+      } catch(e) {}
+    });
+    client.subscribe(creds.deviceID + '/rpc/reply');
+    // RPC-Anfrage senden
     var payload = JSON.stringify({
-      id:     rpcMsgId,
-      src:    deviceID + '/rpc/reply',
+      id: 1,
+      src: creds.deviceID + '/rpc/reply',
       method: 'Switch.GetStatus',
       params: { id: 0 }
     });
-    mqttClient.publish(deviceID + '/rpc', payload);
-    console.log('[KEEPALIVE] OK');
-  } catch(e) {
-    console.warn('[KEEPALIVE] Fehler:', e);
-    reconnect();
-  }
-}, 25000);
+    client.publish(creds.deviceID + '/rpc', payload);
+    // Falls keine Antwort in 3 Sekunden → trotzdem fertig
+    setTimeout(function() {
+      if (!statusReceived) done({ unknown: true });
+    }, 3000);
+  }, function(err, result) {
+    if (err) {
+      setConnState('disconnected', 'STATUS FEHLER');
+      document.getElementById('lampInfo').innerText = '?';
+      return;
+    }
+    if (result.unknown) {
+      setConnState('connected', 'BEREIT (Status unbekannt)');
+      document.getElementById('lampInfo').innerText = '?';
+      return;
+    }
+    lampOn = result.on;
+    updateLampVisual();
+    setConnState('connected', 'BEREIT');
+    document.getElementById('lampInfo').innerText = result.on ? 'EIN' : 'AUS';
+  });
+}
 
-// ── Health Check alle 5 Sekunden ──
-// Prüft ob Connection noch lebt - schnellere Erkennung von toten Verbindungen
-setInterval(function() {
-  if (mqttClient && !mqttClient.connected && !mqttClient.reconnecting) {
-    console.log('[HEALTH] Verbindung tot - reconnect');
-    reconnect();
-  }
-}, 5000);
-
-window.addEventListener('load', connect);
+window.addEventListener('load', loadInitialStatus);
 </script>
 
 </body>
