@@ -158,7 +158,7 @@
       <div>
         <div class="header-title">SMART<span>HOME</span>RW</div>
         <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">GRUNDRISS</div>
-        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.6</div>
+        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.2.7</div>
       </div>
     </div>
     <a href="Project1.html" class="nav-link">⚡ Steuerung →</a>
@@ -228,7 +228,7 @@
 
 <script>
 // ────────────────────────────────────────────────────────────
-// SmartHomeRw Wohnung-Seite v1.2.6
+// SmartHomeRw Wohnung-Seite v1.2.7
 // Verbessert: stabileres Schalten mit Connection-Check
 // ────────────────────────────────────────────────────────────
 
@@ -436,8 +436,10 @@ function connect() {
     clean:    true,
     reconnectPeriod: 3000,
     connectTimeout:  10000,
-    keepalive:       20,    // alle 20 Sekunden Keepalive-Ping
-    resubscribe:     true   // bei Reconnect automatisch wieder abonnieren
+    keepalive:       20,
+    resubscribe:     true,
+    queueQoSZero:    false   // ← KRITISCH: QoS-0 Nachrichten NICHT puffern,
+                              //   sondern sofort senden oder verwerfen
   });
 
   mqttClient.on('connect', function() {
