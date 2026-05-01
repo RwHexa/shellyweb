@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartHomeRw – Ihre individuelle Smart-Home-Lösung</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Helleres, kontrastreicheres Dark-Theme */
+      --bg:        #1a1f2e;
+      --surface:   #252b3d;
+      --card:      #2d3548;
+      --border:    #3d4564;
+      --accent:    #00e5a0;
+      --accent2:   #4dabff;
+      --warm:      #ffb84d;
+      --text:      #f0f4ff;
+      --text-soft: #c8d0e8;
+      --muted:     #8b94b8;
+      --font-ui:   'Rajdhani', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Hintergrund-Effekt */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at top, rgba(77, 171, 255, 0.08), transparent 50%),
+        radial-gradient(ellipse at bottom, rgba(0, 229, 160, 0.06), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    main { position: relative; z-index: 1; }
+
+    /* ── Header ── */
+    .header {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo img {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+    }
+    .logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .logo-text span { color: var(--accent); }
+    .logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .nav a {
+      color: var(--text-soft);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav a:hover { color: var(--accent); }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 60px 32px 80px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(0, 229, 160, 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(0, 229, 160, 0.3);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 20px;
+      line-height: 1.1;
+    }
+    .hero h1 .accent { color: var(--accent); }
+    .hero-sub {
+      font-size: 19px;
+      color: var(--text-soft);
+      max-width: 680px;
+      margin: 0 auto 36px;
+      line-height: 1.5;
+    }
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent);
+      color: #0d1421;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+      box-shadow: 0 0 24px rgba(0, 229, 160, 0.3);
+    }
+    .hero-cta:hover {
+      background: #00ffc0;
+      transform: translateY(-2px);
+      box-shadow: 0 0 32px rgba(0, 229, 160, 0.5);
+    }
+
+    /* ── Section ── */
+    section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 60px 32px;
+    }
+    .section-label {
+      display: inline-block;
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent2);
+      font-weight: 600;
+      margin-bottom: 14px;
+      font-family: var(--font-mono);
+    }
+    .section-title {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 18px;
+    }
+    .section-intro {
+      font-size: 17px;
+      color: var(--text-soft);
+      max-width: 720px;
+      margin-bottom: 50px;
+    }
+
+    /* ── Drei Bedienwege ── */
+    .ways-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .way-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px 28px;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .way-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      opacity: 0.6;
+    }
+    .way-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 8px 32px rgba(0, 229, 160, 0.15);
+    }
+    .way-icon {
+      font-size: 36px;
+      margin-bottom: 16px;
+    }
+    .way-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .way-text {
+      color: var(--text-soft);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── Vorteile (Checks) ── */
+    .benefits-section {
+      background: linear-gradient(180deg, transparent, rgba(77, 171, 255, 0.04));
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin: 40px 0;
+    }
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    .benefit {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: var(--card);
+      padding: 20px 22px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .benefit-check {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #0d1421;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+    }
+    .benefit-text {
+      font-size: 16px;
+      color: var(--text);
+    }
+    .benefit-text strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .benefit-text span {
+      color: var(--text-soft);
+      font-size: 14px;
+    }
+
+    /* ── Funktionen ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .feature {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+    .feature:hover {
+      border-color: var(--accent2);
+      background: var(--surface);
+    }
+    .feature-icon {
+      font-size: 26px;
+      margin-bottom: 10px;
+    }
+    .feature-title {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+    .feature-desc {
+      color: var(--text-soft);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Workflow ── */
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      counter-reset: step;
+    }
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 22px;
+      position: relative;
+      counter-increment: step;
+    }
+    .step::before {
+      content: counter(step);
+      position: absolute;
+      top: -14px;
+      left: 22px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #0d1421;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      font-family: var(--font-mono);
+    }
+    .step-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .step-desc {
+      color: var(--text-soft);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Vergleich ── */
+    .compare {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    .compare-col h3 {
+      font-size: 18px;
+      letter-spacing: 1px;
+      margin-bottom: 18px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+    }
+    .compare-col.bad h3 { color: var(--warm); }
+    .compare-col.good h3 { color: var(--accent); }
+    .compare-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .compare-col li {
+      padding-left: 24px;
+      position: relative;
+      color: var(--text-soft);
+      font-size: 15px;
+    }
+    .compare-col.bad li::before {
+      content: '✗';
+      position: absolute;
+      left: 0;
+      color: var(--warm);
+      font-weight: 800;
+    }
+    .compare-col.good li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    /* ── CTA Box ── */
+    .cta-box {
+      background: linear-gradient(135deg, var(--surface), var(--card));
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      padding: 48px 32px;
+      text-align: center;
+      margin: 40px 0;
+      box-shadow: 0 0 48px rgba(0, 229, 160, 0.1);
+    }
+    .cta-box h2 {
+      font-size: clamp(26px, 4vw, 36px);
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .cta-box p {
+      color: var(--text-soft);
+      font-size: 17px;
+      max-width: 600px;
+      margin: 0 auto 28px;
+    }
+    .cta-box .hero-cta {
+      margin-top: 8px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 30px 32px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-family: var(--font-mono);
+      letter-spacing: 1px;
+    }
+    footer .signature {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 700px) {
+      .header { padding: 20px; flex-direction: column; align-items: flex-start; }
+      .hero { padding: 40px 20px 60px; }
+      section { padding: 40px 20px; }
+      .compare { grid-template-columns: 1fr; gap: 24px; padding: 24px; }
+      .nav { gap: 16px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <img src="logorw.png" alt="SmartHomeRw">
+      <div>
+        <div class="logo-text">Smart<span>Home</span>Rw</div>
+        <div class="logo-sub">Ihre persönliche Smart-Home-Lösung</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="#bedienung">Bedienung</a>
+      <a href="#vorteile">Vorteile</a>
+      <a href="#ablauf">Ablauf</a>
+      <a href="Project1.html">Demo →</a>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">▸ Individuell · Modern · Datensicher</div>
+    <h1>Ihre Wohnung,<br><span class="accent">Ihre Steuerung.</span></h1>
+    <p class="hero-sub">
+      Maßgeschneiderte Smart-Home-Lösung mit Ihrem persönlichen Wohnungsgrundriss.
+      Ohne Cloud-Zwang, ohne Abo-Modell, ohne Datenschutz-Sorgen.
+    </p>
+    <a href="#kontakt" class="hero-cta">Unverbindlich anfragen →</a>
+  </section>
+
+  <!-- 3 Bedienwege -->
+  <section id="bedienung">
+    <div class="section-label">▸ Drei Bedienwege</div>
+    <h2 class="section-title">Immer der passende Weg</h2>
+    <p class="section-intro">
+      Egal ob am Schreibtisch, unterwegs oder schnell auf dem Sofa –
+      Sie haben jederzeit die Steuerung in der Hand, die zu Ihnen passt.
+    </p>
+
+    <div class="ways-grid">
+      <div class="way-card">
+        <div class="way-icon">💻</div>
+        <h3 class="way-title">Hauptanwendung Windows</h3>
+        <p class="way-text">
+          Komfortable Desktop-Oberfläche mit allen Funktionen auf einen Blick.
+          Ideal für die zentrale Steuerung am PC oder Laptop zu Hause.
+        </p>
+      </div>
+
+      <div class="way-card">
+        <div class="way-icon">🌐</div>
+        <h3 class="way-title">Web-App im Browser</h3>
+        <p class="way-text">
+          Funktioniert auf jedem Gerät mit Browser – Windows, Mac, Linux,
+          Android, iPhone. Mit interaktivem Wohnungs-Grundriss und klickbaren Lampen.
+        </p>
+      </div>
+
+      <div class="way-card">
+        <div class="way-icon">📱</div>
+        <h3 class="way-title">Android-App</h3>
+        <p class="way-text">
+          Smartphone-App für die Hosentasche. Schalten Sie Geräte – egal wo
+          Sie gerade sind. Schnell, übersichtlich, immer dabei.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vorteile -->
+  <section id="vorteile" class="benefits-section">
+    <div class="section-label">▸ Ihre Vorteile</div>
+    <h2 class="section-title">Was Sie davon haben</h2>
+    <p class="section-intro">
+      Sechs gute Gründe für eine maßgeschneiderte Lösung statt Software von der Stange.
+    </p>
+
+    <div class="benefits-grid">
+      <div class="benefit">
+        <div class="benefit-check">✓</div>
+        <div class="benefit-text">
+          <strong>Ihr Design</strong>
+          <span>Visualisierung mit Ihrem echten Grundriss</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-check">✓</div>
+        <div class="benefit-text">
+          <strong>Keine Cloud-Pflicht</strong>
+          <span>Sie entscheiden, wo Ihre Daten liegen</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-check">✓</div>
+        <div class="benefit-text">
+          <strong>Kein Abo</strong>
+          <span>Einmalig erstellt, dauerhaft genutzt</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-check">✓</div>
+        <div class="benefit-text">
+          <strong>Plattformübergreifend</strong>
+          <span>Windows, Android, jeder Browser</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-check">✓</div>
+        <div class="benefit-text">
+          <strong>Erweiterbar</strong>
+          <span>Heute ein Gerät, morgen die ganze Wohnung</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-check">✓</div>
+        <div class="benefit-text">
+          <strong>Persönlicher Support</strong>
+          <span>Direkt zum Entwickler, keine Hotlines</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Funktionen -->
+  <section>
+    <div class="section-label">▸ Mögliche Funktionen</div>
+    <h2 class="section-title">Was alles möglich ist</h2>
+    <p class="section-intro">
+      Eine kleine Auswahl der Funktionen, die in Ihre Lösung einfließen können –
+      sprechen Sie mich auf weitere Wünsche an!
+    </p>
+
+    <div class="features-grid">
+      <div class="feature">
+        <div class="feature-icon">🔌</div>
+        <div class="feature-title">Geräte schalten</div>
+        <div class="feature-desc">Licht, Heizung, Steckdosen über Shelly</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Verbrauchsanzeige</div>
+        <div class="feature-desc">Stromverbrauch in Echtzeit sehen</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🌡️</div>
+        <div class="feature-title">Sensoren</div>
+        <div class="feature-desc">Temperatur und Luftfeuchte einbinden</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🏠</div>
+        <div class="feature-title">Grundriss</div>
+        <div class="feature-desc">Klickbare Räume und Geräte</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📅</div>
+        <div class="feature-title">Zeitsteuerung</div>
+        <div class="feature-desc">Automatisches Ein-/Ausschalten</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔔</div>
+        <div class="feature-title">Benachrichtigungen</div>
+        <div class="feature-desc">Push aufs Handy bei Ereignissen</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Workflow -->
+  <section id="ablauf">
+    <div class="section-label">▸ So läuft es ab</div>
+    <h2 class="section-title">In 5 Schritten zu Ihrer Lösung</h2>
+    <p class="section-intro">
+      Klar strukturierter Ablauf von der ersten Idee bis zur fertigen Anwendung.
+    </p>
+
+    <div class="workflow">
+      <div class="step">
+        <div class="step-title">Gespräch</div>
+        <div class="step-desc">Wir besprechen Ihre Wünsche und vorhandene Geräte</div>
+      </div>
+      <div class="step">
+        <div class="step-title">Konzept</div>
+        <div class="step-desc">Ich schlage eine passende Lösung vor – zum Festpreis</div>
+      </div>
+      <div class="step">
+        <div class="step-title">Umsetzung</div>
+        <div class="step-desc">Entwicklung und Anpassung an Ihre Wohnung</div>
+      </div>
+      <div class="step">
+        <div class="step-title">Übergabe</div>
+        <div class="step-desc">Installation, Einweisung und Test bei Ihnen</div>
+      </div>
+      <div class="step">
+        <div class="step-title">Betreuung</div>
+        <div class="step-desc">Auch nach dem Projekt für Sie da</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vergleich -->
+  <section>
+    <div class="section-label">▸ Warum SmartHomeRw?</div>
+    <h2 class="section-title">Der Unterschied zu kommerziellen Systemen</h2>
+
+    <div class="compare">
+      <div class="compare-col bad">
+        <h3>Kommerzielle Smart-Home Anbieter</h3>
+        <ul>
+          <li>Versteckte Datennutzung – Ihre Daten gehören dem Anbieter</li>
+          <li>Werbung und Verkaufsdruck in der App</li>
+          <li>"Software für Millionen" – Sie sind ein Kunde von vielen</li>
+          <li>Black Box – Sie wissen nicht, was im Hintergrund läuft</li>
+          <li>Anonymes Support-Ticket – tagelange Wartezeiten</li>
+          <li>Monatliche Abo-Gebühren</li>
+        </ul>
+      </div>
+      <div class="compare-col good">
+        <h3>SmartHomeRw</h3>
+        <ul>
+          <li>Ihre Wohnung bleibt Ihre Sache – keine Datennutzung</li>
+          <li>Nur das, was Sie wirklich brauchen – keine Werbung</li>
+          <li>Persönliche Anpassung – nur für Sie entwickelt</li>
+          <li>Transparent – Sie wissen, was die Software macht</li>
+          <li>Direkter Ansprechpartner – kurze Wege, schnelle Hilfe</li>
+          <li>Einmaliger Festpreis – keine versteckten Kosten</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="kontakt">
+    <div class="cta-box">
+      <h2>Interesse geweckt?</h2>
+      <p>
+        Sprechen Sie mich an – kostenloses und unverbindliches Erstgespräch.
+        Wir schauen gemeinsam, was zu Ihnen und Ihrem Zuhause passt.
+      </p>
+      <a href="mailto:wermeling-reinhard@gmx.de?subject=SmartHomeRw%20Anfrage" class="hero-cta">📧 Kontakt aufnehmen</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>SmartHomeRw – Ihre Wohnung, Ihre Steuerung, Ihre Daten.</p>
+    <p style="margin-top:8px"><span class="signature">Ronny</span> · Smart-Home-Entwicklung mit Delphi &amp; Lazarus</p>
+  </footer>
+
+</main>
+</body>
+</html>
