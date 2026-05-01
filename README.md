@@ -4,8 +4,8 @@
 
 Eine moderne, plattformübergreifende Web-App zur Fernsteuerung und Überwachung
 von Shelly-Smart-Home-Geräten. Zwei Ansichten: klassische Steuerung mit Status-Karten
-oder visueller Grundriss mit klickbaren Lampen. **Läuft im Desktop- und Android-Browser
-ohne Installation!**
+oder visueller Grundriss mit klickbaren Lampen. **Läuft im Desktop-Browser(Windows)
+und auf Android-Browser(Handy) ohne Installation.**
 
 🚀 **Live-Demo:** [rwhexa.github.io/shellyweb/Project1.html](https://rwhexa.github.io/shellyweb/Project1.html)
 
@@ -13,25 +13,27 @@ ohne Installation!**
 
 ## ✨ Features
 
-### Steuerungs-Seite
+### Steuerungs-Seite (`Project1.html`)
 - 🔐 **HiveMQ Cloud** Verbindung via WebSocket (WSS, TLS-verschlüsselt)
 - 📊 **Live-Messwerte:** Leistung · Spannung · Strom · Verbrauch
 - 💡 **Ein/Aus schalten** mit Echtzeit-Statusanzeige
 - ➕ **Mehrere Geräte** verwaltbar
+- 📑 **Tab-Navigation:** Verbindung / Geräte
 - 🐛 **MQTT-Log** zur Diagnose
 
-### Grundriss-Seite (NEU v1.2.0)
+### Grundriss-Seite (`wohnung.html`)
 - 🏠 **Interaktiver Wohnungs-Grundriss** mit 3D-Bild
 - 💡 **Klickbare Lampen-Overlays** in den Räumen
 - ⚡ **Wohnzimmer-Lampe** schaltet echten Shelly direkt
 - 🎨 **3 Demo-Lampen** für andere Räume
-- 📊 **Status-Anzeige:** Online/Offline + Watt-Verbrauch
+- ✅ **Connect-per-Click** Architektur für maximale Zuverlässigkeit
+- 📊 **Status-Anzeige** beim Seitenaufruf (EIN/AUS)
 
 ### Allgemein
-- 📱 **Mobile-ready** – funktioniert auf Android und iOS Browsern
+- 📱 **Mobile-ready** – funktioniert auf Android(Handy/Tablet) und iOS Browsern
 - 💾 **Persistente Speicherung** (Zugangsdaten + Geräte bleiben erhalten)
 - 🎨 **Dark-Theme UI** mit Tab-Navigation und eigenem Logo
-- 🔄 **Auto-Refresh** für Status-Updates
+- 🔄 **Auto-Refresh** für Status-Updates auf Steuerungs-Seite
 
 ---
 
@@ -54,9 +56,9 @@ ohne Installation!**
 │  Project1.html              │    │  wohnung.html               │
 │  (TMS Web Core App)         │←──→│  (eigenständige HTML-Seite) │
 │                             │    │                             │
-│  - Tab Verbindung           │    │  - Wohnungs-Bild            │
-│  - Tab Geräte               │    │  - Klickbare Lampen         │
-│  - Schalten + Status        │    │  - Eigener MQTT-Client      │
+│  - Permanente MQTT-Verb.    │    │  - Connect-per-Click        │
+│  - Live Schalten + Status   │    │  - Wohnung-Bild + Lampen    │
+│  - Multi-Device Verwaltung  │    │  - Initial-Status beim Load │
 └──────────────┬──────────────┘    └──────────────┬──────────────┘
                │                                  │
                └─────────► localStorage ◄─────────┘
@@ -75,6 +77,16 @@ ohne Installation!**
                     │  Gen3               │
                     └─────────────────────┘
 ```
+
+### Zwei verschiedene Verbindungsstrategien
+
+**Steuerungs-Seite (Project1.html):**
+Permanente MQTT-Verbindung für Live-Updates und sofortiges Schalten mehrerer Geräte.
+
+**Grundriss-Seite (wohnung.html):**
+"Connect-per-Click" – bei jedem Klick wird eine neue Verbindung aufgebaut, der
+Befehl gesendet und sofort wieder getrennt. Das macht das Schalten **garantiert
+zuverlässig** auch nach längerer Idle-Zeit.
 
 ---
 
@@ -110,7 +122,7 @@ Einfach im Browser öffnen:
 4. Status erscheint sofort, schalten und überwachen
 5. Im Header oben rechts auf **🏠 Grundriss** klicken
 6. Wohnung-Bild mit klickbaren Lampen erscheint
-7. Wohnzimmer-Lampe klicken → echter Shelly schaltet
+7. Wohnzimmer-Lampe klicken → echter Shelly schaltet (~1-2 Sek)
 
 > 💡 Zugangsdaten und Geräte werden im Browser gespeichert (localStorage) –
 > beim nächsten Aufruf ist alles vorausgefüllt.
@@ -163,6 +175,10 @@ Beim Wechsel wird die MQTT-Verbindung neu aufgebaut (~1-2 Sekunden) – technisc
 bedingt durch Browser-Seitenwechsel. Da Zugangsdaten und Geräte im localStorage
 gespeichert sind, geschieht das automatisch.
 
+⏱️ **Schaltvorgang auf Grundriss-Seite:**
+Dauert ~1-2 Sekunden, da bei jedem Klick eine frische MQTT-Verbindung aufgebaut wird.
+Das ist gewollt für maximale Zuverlässigkeit (siehe Lessons Learned).
+
 ---
 
 ## 🎨 Grundriss anpassen
@@ -176,6 +192,32 @@ definiert:
 
 Anpassen für eigene Wohnung: `left` und `top` ändern.
 Eigenes Wohnungs-Bild: `grundriss.png` ersetzen (empfohlene Breite: 800px).
+
+---
+
+## 💡 Lessons Learned
+
+Während der Entwicklung mussten einige technische Hürden gemeistert werden.
+Diese Erkenntnisse können auch für andere MQTT/Browser-Projekte hilfreich sein:
+
+### MQTT.js auf HiveMQ Cloud Free Tier
+- **Permanente Verbindungen** sind über lange Idle-Zeiten unzuverlässig
+- **`mqttClient.connected`** kann `true` zeigen obwohl Verbindung tot ist
+- **Connect-per-Click** ist die robusteste Lösung für gelegentliches Schalten
+- Mehrere parallele Verbindungen vom selben User können konkurrieren
+
+### Browser-Sicherheit
+- `file://` URLs blockieren WebSockets in Chrome → lokal Webserver nötig
+- localStorage ist pro Origin geteilt → funktioniert auch über mehrere HTML-Seiten
+- Public Repository auf GitHub Pages → keine sensiblen Daten im Code
+
+### TMS Web Core Eigenheiten
+- `$(ProjectName).js` Platzhalter funktioniert nur beim Build, nicht beim Laden
+- Pascal-Property-Namen werden als Felder kompiliert (`Name` → `FName`)
+- Form-Layout passt nicht ideal zu großen Bildern → separate HTML-Seiten als Lösung
+- Pascal-Variablennamen sollten nicht mit JS-Globals kollidieren (`JSON`, `Date`, etc.)
+
+Vollständige Bug-Diagnose und Lösungswege siehe [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -196,16 +238,28 @@ Eigenes Wohnungs-Bild: `grundriss.png` ersetzen (empfohlene Breite: 800px).
 
 Vollständige Versionshistorie siehe [CHANGELOG.md](CHANGELOG.md).
 
-**Aktuell:** v1.2.0 – Grundriss-Seite mit interaktiven Lampen
+**Aktuell:** v1.3.0 – Connect-per-Click Architektur für die Grundriss-Seite
+
+---
+
+## 🌍 Hosting auf GitHub Pages
+
+Die App wird kostenlos über GitHub Pages gehostet – ohne eigene Domain oder Server.
+Detaillierte Anleitung wie das eingerichtet wird siehe [GITHUB-PAGES-DEPLOYMENT.md](GITHUB-PAGES-DEPLOYMENT.md).
 
 ---
 
 ## 🔗 Repositories
 
-| Repository | Zweck |
-|------------|-------|
-| [`shelly-controller`](https://github.com/rwhexa/shelly-controller) | Stabile Backup-Version |
-| [`shellyweb`](https://github.com/rwhexa/shellyweb) | Aktuelle Entwicklungs-Version |
+| Repository | URL | Zweck |
+|------------|-----|-------|
+| [`shelly-controller`](https://github.com/rwhexa/shelly-controller) | https://rwhexa.github.io/shelly-controller/ | Stabile Backup-Version |
+| [`shellyweb`](https://github.com/rwhexa/shellyweb) | https://rwhexa.github.io/shellyweb/ | Aktuelle Entwicklungs-Version |
+
+**Backup-Strategie:**
+Während in `shellyweb` neue Features entwickelt werden, läuft `shelly-controller`
+als unveränderte stabile Version weiter. Falls in `shellyweb` ein Update Probleme
+macht, ist die Backup-Version immer verfügbar.
 
 ---
 
@@ -217,4 +271,7 @@ Privates Projekt – frei zur Nutzung und Anpassung.
 
 ## 👤 Autor
 
-**Reiny** – Smart Home & IoT Projekte mit Delphi / Lazarus / Free Pascal
+**RwTec** – Smart Home & IoT Projekte mit Delphi / Lazarus / Free Pascal
+
+![Handy-Screen](Handyklein.jpg)
+
