@@ -156,6 +156,157 @@
       transform: translateY(-2px);
       box-shadow: 0 0 32px rgba(0, 229, 160, 0.5);
     }
+    .hero-cta-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: transparent;
+      color: var(--accent2);
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 10px;
+      border: 2px solid var(--accent2);
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+    .hero-cta-secondary:hover {
+      background: rgba(77, 171, 255, 0.12);
+      transform: translateY(-2px);
+      box-shadow: 0 0 24px rgba(77, 171, 255, 0.3);
+    }
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── Showcase: Hauptanwendung Windows ── */
+    .showcase {
+      background: linear-gradient(135deg, var(--surface), var(--card));
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      padding: 48px 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+      box-shadow: 0 12px 48px rgba(0, 229, 160, 0.15);
+      margin-top: 30px;
+    }
+    .showcase-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #0d1421;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      margin-bottom: 18px;
+    }
+    .showcase h3 {
+      font-size: clamp(24px, 3.5vw, 34px);
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .showcase h3 .accent { color: var(--accent); }
+    .showcase p {
+      color: var(--text-soft);
+      font-size: 16px;
+      margin-bottom: 22px;
+      line-height: 1.6;
+    }
+    .showcase-features {
+      list-style: none;
+      margin-bottom: 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .showcase-features li {
+      color: var(--text-soft);
+      font-size: 15px;
+      padding-left: 28px;
+      position: relative;
+    }
+    .showcase-features li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 18px;
+    }
+    .showcase-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .showcase-visual {
+      background: #1a1f2e;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    .showcase-visual-icon {
+      font-size: 80px;
+      margin-bottom: 14px;
+      filter: drop-shadow(0 0 20px rgba(0, 229, 160, 0.4));
+    }
+    .showcase-visual-title {
+      color: var(--accent);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      margin-bottom: 6px;
+    }
+    .showcase-visual-name {
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+    .showcase-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 16px;
+      background: rgba(0, 229, 160, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(0, 229, 160, 0.2);
+    }
+    .showcase-stat {
+      text-align: center;
+    }
+    .showcase-stat-value {
+      color: var(--accent);
+      font-size: 26px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      line-height: 1;
+    }
+    .showcase-stat-label {
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    @media (max-width: 800px) {
+      .showcase { grid-template-columns: 1fr; gap: 24px; padding: 32px 24px; }
+    }
 
     /* ── Section ── */
     section {
@@ -463,14 +614,15 @@
     <div class="logo">
       <img src="logorw.png" alt="SmartHomeRw">
       <div>
-        <div class="logo-text">Smart<span>Home</span>Rw</div>
+        <div class="logo-text">SMART<span>HOME</span>RW</div>
         <div class="logo-sub">Ihre persönliche Smart-Home-Lösung</div>
       </div>
     </div>
     <nav class="nav">
+      <a href="#windows-app">Windows-App</a>
       <a href="#bedienung">Bedienung</a>
       <a href="#vorteile">Vorteile</a>
-      <a href="#ablauf">Ablauf</a>
+      <a href="HauptAnwendPresent.html">Präsentation</a>
       <a href="Project1.html">Demo →</a>
     </nav>
   </header>
@@ -483,7 +635,66 @@
       Maßgeschneiderte Smart-Home-Lösung mit Ihrem persönlichen Wohnungsgrundriss.
       Ohne Cloud-Zwang, ohne Abo-Modell, ohne Datenschutz-Sorgen.
     </p>
-    <a href="#kontakt" class="hero-cta">Unverbindlich anfragen →</a>
+    <div class="hero-buttons">
+      <a href="Project1.html" class="hero-cta">🌐 Live-Demo öffnen →</a>
+      <a href="#kontakt" class="hero-cta-secondary">📧 Anfragen</a>
+    </div>
+  </section>
+
+  <!-- ⭐ Showcase: Hauptanwendung Windows -->
+  <section id="windows-app" style="padding-top:30px;">
+    <div class="section-label">▸ Das Herzstück</div>
+    <h2 class="section-title">Hauptanwendung für Windows</h2>
+    <p class="section-intro">
+      Die zentrale SmartHome-Steuerung läuft als <strong style="color:var(--accent);">eine einzige Datei</strong> auf Ihrem Windows-PC.
+      Ohne Installations-Assistent. Ohne Server. Ohne monatliche Gebühren.
+    </p>
+
+    <div class="showcase">
+      <div>
+        <span class="showcase-badge">⭐ Hauptanwendung</span>
+        <h3>Eine Datei. <span class="accent">Unbegrenzte Möglichkeiten.</span></h3>
+        <p>
+          Komfortable Desktop-Oberfläche mit allen Funktionen auf einen Blick.
+          Grundriss-Visualisierung, Geräte-Steuerung, Sensor-Daten, Müll-Termine,
+          Push-Benachrichtigungen – alles vereint in einer Anwendung.
+        </p>
+        <ul class="showcase-features">
+          <li>Eine Datei kopieren – fertig installiert</li>
+          <li>3D-Grundriss mit klickbaren Räumen</li>
+          <li>Live-Verbrauchsdaten (W, V, A, kWh)</li>
+          <li>Push-Alarm aufs Smartphone</li>
+          <li>Individuell anpassbar nach Ihren Wünschen</li>
+        </ul>
+        <div class="showcase-buttons">
+          <a href="https://rwhexa.github.io/shwindows/SHwindows.html" class="hero-cta">📄 Präsentation ansehen →</a>
+          <a href="#kontakt" class="hero-cta-secondary">Anfragen</a>
+        </div>
+      </div>
+
+      <div class="showcase-visual">
+        <div class="showcase-visual-icon">💻</div>
+        <div class="showcase-visual-title">Windows 10 / 11</div>
+        <div class="showcase-visual-name">SmartHome-Steuerung</div>
+        <div class="showcase-stats">
+          <div class="showcase-stat">
+            <div class="showcase-stat-value">1</div>
+            <div class="showcase-stat-label">Datei</div>
+          </div>
+          <div class="showcase-stat">
+            <div class="showcase-stat-value">0</div>
+            <div class="showcase-stat-label">Server</div>
+          </div>
+          <div class="showcase-stat">
+            <div class="showcase-stat-value">∞</div>
+            <div class="showcase-stat-label">PCs</div>
+          </div>
+        </div>
+        <div style="margin-top:14px; color:var(--muted); font-size:11px; font-family:var(--font-mono); letter-spacing:1px;">
+          Doppelklick · läuft sofort
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- 3 Bedienwege -->
@@ -503,6 +714,7 @@
           Komfortable Desktop-Oberfläche mit allen Funktionen auf einen Blick.
           Ideal für die zentrale Steuerung am PC oder Laptop zu Hause.
         </p>
+        <a href="#windows-app" style="display:inline-block; margin-top:14px; color:var(--accent); text-decoration:none; font-size:13px; font-weight:600; letter-spacing:1px;">▸ Mehr erfahren</a>
       </div>
 
       <div class="way-card">
@@ -512,6 +724,7 @@
           Funktioniert auf jedem Gerät mit Browser – Windows, Mac, Linux,
           Android, iPhone. Mit interaktivem Wohnungs-Grundriss und klickbaren Lampen.
         </p>
+        <a href="Project1.html" style="display:inline-block; margin-top:14px; color:var(--accent); text-decoration:none; font-size:13px; font-weight:600; letter-spacing:1px;">▸ Live-Demo öffnen</a>
       </div>
 
       <div class="way-card">
@@ -700,7 +913,7 @@
   <!-- Footer -->
   <footer>
     <p>SmartHomeRw – Ihre Wohnung, Ihre Steuerung, Ihre Daten.</p>
-    <p style="margin-top:8px"><span class="signature">Ronny</span> · Smart-Home-Entwicklung mit Delphi &amp; Lazarus</p>
+    <p style="margin-top:8px"><span class="signature">RwTec</span> · Smart-Home-Entwicklung mit Delphi &amp; Lazarus</p>
   </footer>
 
 </main>
