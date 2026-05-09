@@ -212,7 +212,7 @@
       <div>
         <div class="header-title">SMART<span>HOME</span>RW</div>
         <div style="font-size:11px;color:var(--muted);letter-spacing:1px;">GRUNDRISS</div>
-        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.4.0</div>
+        <div style="font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;margin-top:2px;">v1.5.0</div>
       </div>
     </div>
     <a href="Project1.html" class="nav-link">⚡ Steuerung →</a>
@@ -294,7 +294,7 @@
 
 <script>
 // ────────────────────────────────────────────────────────────
-// SmartHomeRw Wohnung-Seite v1.4.0
+// SmartHomeRw Wohnung-Seite v1.5.0
 // NEUE STRATEGIE: Pro Klick eine frische MQTT-Verbindung
 // → kein Stale-State, kein Idle-Timeout, garantiert zuverlässig
 // ────────────────────────────────────────────────────────────
@@ -527,6 +527,102 @@ function loadInitialStatus() {
 window.addEventListener('load', loadInitialStatus);
 
 // ────────────────────────────────────────────────────────────
+// Permanente MQTT-Verbindung für Bewegungsmelder-Events
+// (parallel zu Connect-per-Click für Schalt-Befehle)
+// ────────────────────────────────────────────────────────────
+
+var motionMqttClient = null;
+var lastMotionTimestamp = 0;  // Anti-Spam: nur 1 Meldung pro 3 Sek
+
+function connectMotionListener() {
+  var creds = loadCredentials();
+  if (!creds.host || !creds.user || !creds.deviceID) {
+    console.log('[MOTION] Keine Credentials - kein Listener');
+    return;
+  }
+
+  var url = 'wss://' + creds.host + ':' + creds.port + '/mqtt';
+  var clientId = 'wohnung-motion-' + Date.now() + '-' + Math.floor(Math.random() * 99999);
+
+  console.log('[MOTION] Connecting listener as ' + clientId);
+
+  motionMqttClient = mqtt.connect(url, {
+    username: creds.user,
+    password: creds.pass,
+    clientId: clientId,
+    clean:    true,
+    reconnectPeriod: 5000,
+    connectTimeout:  10000,
+    keepalive:       30,
+    queueQoSZero:    false
+  });
+
+  motionMqttClient.on('connect', function() {
+    console.log('[MOTION] Connected - subscribing to events/rpc');
+    motionMqttClient.subscribe(creds.deviceID + '/events/rpc');
+    motionMqttClient.subscribe(creds.deviceID + '/status/bthomesensor:203'); // motion sensor
+  });
+
+  motionMqttClient.on('message', function(topic, message) {
+    try {
+      var payload = message.toString();
+      var parsed = JSON.parse(payload);
+
+      // ── Variante 1: NotifyStatus mit bthomesensor (Live-Status-Update) ──
+      if (parsed.method === 'NotifyStatus' && parsed.params) {
+        // Suche bthomesensor mit value = true und ggf. motion-Eigenschaft
+        for (var key in parsed.params) {
+          if (key.indexOf('bthomesensor') === 0) {
+            var sensor = parsed.params[key];
+            if (sensor && sensor.value === true) {
+              // Das könnte Motion sein - prüfen via Sensor-Konfiguration nicht möglich,
+              // aber bei BLU Motion sind nur Battery (Zahl) und Motion (true/false)
+              triggerMotionAlert();
+              return;
+            }
+          }
+        }
+      }
+
+      // ── Variante 2: NotifyEvent (selten bei BLU Motion) ──
+      if (parsed.method === 'NotifyEvent' && parsed.params && parsed.params.events) {
+        for (var i = 0; i < parsed.params.events.length; i++) {
+          var ev = parsed.params.events[i];
+          if (ev.event === 'motion' || ev.event === 'true') {
+            triggerMotionAlert();
+            return;
+          }
+        }
+      }
+    } catch(e) {
+      console.warn('[MOTION] Parse error:', e);
+    }
+  });
+
+  motionMqttClient.on('error', function(err) {
+    console.warn('[MOTION] Error:', err && err.message);
+  });
+
+  motionMqttClient.on('close', function() {
+    console.log('[MOTION] Connection closed - reconnect in 5s');
+  });
+}
+
+function triggerMotionAlert() {
+  // Anti-Spam: max. 1 Meldung pro 3 Sekunden
+  var now = Date.now();
+  if (now - lastMotionTimestamp < 3000) {
+    console.log('[MOTION] Ignored (too soon after last one)');
+    return;
+  }
+  lastMotionTimestamp = now;
+
+  console.log('[MOTION] BEWEGUNG ERKANNT!');
+  addMotionAlert('ZutrittWz', 'f4:b3:b1:f7:68:57');
+}
+
+
+// ────────────────────────────────────────────────────────────
 // Bewegungsmeldungen (BLU Motion - Demo Version)
 // ────────────────────────────────────────────────────────────
 
@@ -654,6 +750,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Beim Laden: gespeicherte Meldungen wiederherstellen
   loadMotionAlerts();
   renderMotionList();
+
+  // Echte MQTT-Verbindung für BLU Motion starten (mit kleiner Verzögerung)
+  setTimeout(connectMotionListener, 1500);
 });
 </script>
 
